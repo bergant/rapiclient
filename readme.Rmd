@@ -1,0 +1,110 @@
+---
+output: 
+  html_document: 
+    keep_md: yes
+---
+# rapiclient
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**(Experimental)** Get an R API client from Swagger representation as
+dynamically created functions.
+
+## Install
+
+```{r eval=FALSE}
+devtools::install_github("bergant/rapiclient")
+```
+
+
+## Usage
+
+### Prepare API Operations and Schemas
+
+```{r}
+library(rapiclient)
+```
+
+Get API definition from [sample petstore service](http://petstore.swagger.io):
+
+```{r api, cache=TRUE}
+pet_api <- get_api(url = "http://petstore.swagger.io/v2/swagger.json")
+operations <- get_operations(pet_api)
+schemas <- get_schemas(pet_api)
+```
+
+Function `get_operations` returns a **list of functions** according to API operations definition.
+
+And `get_schemas` returns a list of functions each returning an object 
+according to the related schema in the API.
+
+
+## Calling Service Operations
+
+### Find a Pet
+Let's try to find a pet with Id = 42 (see operation definition):
+```{r getPetById}
+res <- operations$getPetById(petId = 42)
+
+res$status_code
+str(httr::content(res))
+```
+
+### New Pet
+OK, there is no pet with Id = 42, so let's add a new pet:
+
+```{r addPet}
+res <- 
+  operations$addPet(
+    id = 42,
+    category = schemas$Category(
+      id = 1,
+      name = "Undefined"
+    ),
+    name = "Agrajag",
+    photoUrls = list(),
+    tags = list(
+      schemas$Tag(id = 1, name = "Wild"),
+      schemas$Tag(id = 2, name = "Furry")
+    ),
+    status = "available"
+  )
+
+res$status_code
+```
+
+Check:
+
+```{r findPet2}
+res <- operations$getPetById(petId = 42)
+
+res$status_code
+str(httr::content(res))
+```
+
+
+
+```{r echo=FALSE}
+res <- operations$deletePet(api_key = "special-key", petId = 42)
+```
+
+## Help on API Operations
+
+In RStudio you can use autocomplete with dynamically created functions
+but you can't get an R documentation
+with `help` or `?`. To lookup the operation definition
+just print the function (write it down without parenthesis):
+
+Let's get help for `getPetById`:
+```{r print}
+operations$getPetById
+```
+
+More complicated `addPet` also describes the nested schemas:
+
+```{r print2}
+operations$addPet
+```
+

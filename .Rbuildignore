@@ -1,0 +1,4 @@
+^.*\.Rproj$
+^.*\.RData$
+^\.Rproj\.user$
+^readme\.*
