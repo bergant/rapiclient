@@ -44,7 +44,7 @@ according to the related schema in the API.
 ## Calling Service Operations
 
 ### Find a Pet
-Let's try to find a pet with Id = 42 (see operation definition):
+Let's try to find a pet with Id = 42 (see operation [definition](http://petstore.swagger.io/#!/pet/getPetById)):
 ```{r getPetById}
 res <- operations$getPetById(petId = 42)
 
@@ -53,7 +53,7 @@ str(httr::content(res))
 ```
 
 ### New Pet
-OK, there is no pet with Id = 42, so let's add a new pet:
+OK, there is no pet with Id = 42, so let's [add a pet](http://petstore.swagger.io/#!/pet/addPet):
 
 ```{r addPet}
 res <- 
