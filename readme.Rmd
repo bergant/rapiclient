@@ -3,14 +3,17 @@ output:
   html_document: 
     keep_md: yes
 ---
-# rapiclient
+# __rapiclient__
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, comment = "#", collapse = TRUE)
 ```
 
-**(Experimental)** Get an R API client from Swagger representation as
-dynamically created functions.
+Access services specified in [OpenAPI](https://openapis.org) (formerly Swagger) format.
+
+**rapiclient** is not a code generator. Client is generated dynamically as 
+a list of R functions.
+
 
 ## Install
 
@@ -27,7 +30,8 @@ devtools::install_github("bergant/rapiclient")
 library(rapiclient)
 ```
 
-Get API definition from [sample petstore service](http://petstore.swagger.io):
+This example uses the [sample petstore service](http://petstore.swagger.io)
+and its OpenAPI definition at (http://petstore.swagger.io/v2/swagger.json).
 
 ```{r api, cache=TRUE}
 pet_api <- get_api(url = "http://petstore.swagger.io/v2/swagger.json")
@@ -35,15 +39,18 @@ operations <- get_operations(pet_api)
 schemas <- get_schemas(pet_api)
 ```
 
-Function `get_operations` returns a **list of functions** according to API operations definition.
+Function `get_operations` returns a **list of functions**. 
+Each function takes named arguments, converts the values to JSON 
+according to API operation definition and performs a service call which
+returns a http response object.
 
-And `get_schemas` returns a list of functions each returning an object 
-according to the related schema in the API.
+Function `get_schemas` returns a list of functions where each function returns 
+an object according to the related schema in the API.
 
 
-## Calling Service Operations
+### Calling Service Operations
 
-### Find a Pet
+#### Find a Pet
 Let's try to find a pet with Id = 42 (see operation [definition](http://petstore.swagger.io/#!/pet/getPetById)):
 ```{r getPetById}
 res <- operations$getPetById(petId = 42)
@@ -52,7 +59,7 @@ res$status_code
 str(httr::content(res))
 ```
 
-### New Pet
+#### New Pet
 OK, there is no pet with Id = 42, so let's [add a pet](http://petstore.swagger.io/#!/pet/addPet):
 
 ```{r addPet}
@@ -90,10 +97,9 @@ str(httr::content(res))
 res <- operations$deletePet(api_key = "special-key", petId = 42)
 ```
 
-## Help on API Operations
+### Help on API Operations
 
-In RStudio you can use autocomplete with dynamically created functions
-but you can't get an R documentation
+The good news is that autocomplete in RStudio editor works fine with dynamically created functions. The bad news: R documentation is not available 
 with `help` or `?`. To lookup the operation definition
 just print the function (write it down without parenthesis):
 
@@ -107,4 +113,38 @@ More complicated `addPet` also describes the nested schemas:
 ```{r print2}
 operations$addPet
 ```
+
+For more detailed operation description use the operation's "definition" attribute :
+
+```{r operation_definition}
+definition <- attr(operations$getPetById, "definition")
+str(definition)
+```
+
+
+### Using Additional Headers
+
+Set additional http headers at the time of creating operation functions
+in `get_operations` function.
+
+The following example uses New York Times API from [developer.nytimes.com](http://developer.nytimes.com/)
+with API key authentication.
+
+
+```{r nyt_api_test, cache=TRUE}
+nyt_api <- get_api("http://developer.nytimes.com/top_stories_v2.json/swagger.json")
+
+nyt_operations <- 
+  get_operations( nyt_api, .headers = c("api-key" = Sys.getenv("NYT_API_KEY")))
+
+res <- nyt_operations$Top_Stories(section = "science", format = "json")
+
+res$status_code
+
+content <- httr::content(res)
+str(content, max.level = 1)
+
+```
+
+
 

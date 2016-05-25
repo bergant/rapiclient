@@ -4,10 +4,12 @@
 \alias{get_operations}
 \title{Create Operation Functions}
 \usage{
-get_operations(api)
+get_operations(api, .headers = NULL)
 }
 \arguments{
 \item{api}{API object (see \code{\link{get_api}})}
+
+\item{.headers}{Optional headers passed to \code{\link[httr]{add_headers}}}
 }
 \value{
 A list of functions.

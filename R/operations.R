@@ -32,6 +32,10 @@ get_operation_definitions <- function(api, tags = NULL) {
       operation <- api$paths[[path]][[action]]
       operation$path = path
       operation$action = action
+      if(is.null(operation$operationId)) {
+        # sometimes there is no operationId? (http://developer.nytimes.com/top_stories_v2.json/swagger.json)
+        operation$operationId <- gsub(" ", "_", operation$summary)
+      }
       ret <- c(ret, setNames(list(operation), operation$operationId))
     }
   }
@@ -46,9 +50,10 @@ get_operation_definitions <- function(api, tags = NULL) {
 #' Names in a list are operationIDs from API.
 #'
 #' @param api API object (see \code{\link{get_api}})
+#' @param .headers Optional headers passed to \code{\link[httr]{add_headers}}
 #' @return A list of functions.
 #' @export
-get_operations <- function(api) {
+get_operations <- function(api, .headers = NULL) {
 
   operation_defs <- get_operation_definitions(api)
 
@@ -99,7 +104,8 @@ get_operations <- function(api) {
           url = get_url(x),
           body = request_json,
           httr::content_type("application/json"),
-          httr::accept_json()
+          httr::accept_json(),
+          httr::add_headers(.headers = .headers)
         )
       }
     } else if(op_def$action == "put") {
@@ -110,7 +116,8 @@ get_operations <- function(api) {
           url = get_url(x),
           body = request_json,
           httr::content_type("application/json"),
-          httr::accept_json()
+          httr::accept_json(),
+          httr::add_headers(.headers = .headers)
         )
       }
     } else if(op_def$action == "get") {
@@ -119,7 +126,8 @@ get_operations <- function(api) {
         httr::GET(
           url = get_url(x),
           httr::content_type("application/json"),
-          httr::accept_json()
+          httr::accept_json(),
+          httr::add_headers(.headers = .headers)
         )
       }
     } else if(op_def$action == "delete") {
@@ -128,7 +136,8 @@ get_operations <- function(api) {
         httr::DELETE(
           url = get_url(x),
           httr::content_type("application/json"),
-          httr::accept_json()
+          httr::accept_json(),
+          httr::add_headers(.headers = .headers)
         )
       }
     }
