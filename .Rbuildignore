@@ -2,3 +2,5 @@
 ^.*\.RData$
 ^\.Rproj\.user$
 ^readme\.*
+^readme_cache\.*
+^img\.*

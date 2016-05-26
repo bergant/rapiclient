@@ -3,7 +3,10 @@ output:
   html_document: 
     keep_md: yes
 ---
+
 # __rapiclient__
+
+<img align="right" src="img/rapiclient_ani.gif"/>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, comment = "#", collapse = TRUE)
@@ -15,7 +18,7 @@ Access services specified in [OpenAPI](https://openapis.org) (formerly Swagger) 
 a list of R functions.
 
 
-## Install
+## Installation
 
 ```{r eval=FALSE}
 devtools::install_github("bergant/rapiclient")
@@ -52,7 +55,7 @@ an object according to the related schema in the API.
 
 #### Find a Pet
 Let's try to find a pet with Id = 42 (see operation [definition](http://petstore.swagger.io/#!/pet/getPetById)):
-```{r getPetById}
+```{r getPetById, cache=TRUE}
 res <- operations$getPetById(petId = 42)
 
 res$status_code
@@ -62,7 +65,7 @@ str(httr::content(res))
 #### New Pet
 OK, there is no pet with Id = 42, so let's [add a pet](http://petstore.swagger.io/#!/pet/addPet):
 
-```{r addPet}
+```{r addPet, cache=TRUE}
 res <- 
   operations$addPet(
     id = 42,
@@ -84,7 +87,7 @@ res$status_code
 
 Check:
 
-```{r findPet2}
+```{r findPet2, cache=TRUE}
 res <- operations$getPetById(petId = 42)
 
 res$status_code
@@ -93,7 +96,7 @@ str(httr::content(res))
 
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, cache=TRUE}
 res <- operations$deletePet(api_key = "special-key", petId = 42)
 ```
 

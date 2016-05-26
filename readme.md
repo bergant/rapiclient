@@ -1,4 +1,7 @@
+
 # __rapiclient__
+
+<img align="right" src="img/rapiclient_ani.gif"/>
 
 
 
@@ -8,7 +11,7 @@ Access services specified in [OpenAPI](https://openapis.org) (formerly Swagger) 
 a list of R functions.
 
 
-## Install
+## Installation
 
 
 ```r
@@ -222,9 +225,9 @@ str(content, max.level = 1)
 #  $ status      : chr "OK"
 #  $ copyright   : chr "Copyright (c) 2016 The New York Times Company. All Rights Reserved."
 #  $ section     : chr "science"
-#  $ last_updated: chr "2016-05-25T17:05:19-04:00"
-#  $ num_results : int 36
-#  $ results     :List of 36
+#  $ last_updated: chr "2016-05-26T14:15:22-04:00"
+#  $ num_results : int 35
+#  $ results     :List of 35
 ```
 
 
