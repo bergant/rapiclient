@@ -66,18 +66,33 @@ get_api <- function(url) {
 #' operations <- get_operations(api, handle_response = content_or_stop)
 #' }
 content_or_stop <- function(x) {
-  httr::content(httr::stop_for_status(x))
+  res <- httr::stop_for_status(x)
+  if(inherits(res, "response")) {
+    httr::content(res)
+  } else {
+    res
+  }
 }
 
 #' @rdname result_handlers
 #' @export
 content_or_warning <- function(x) {
-  httr::content(httr::warn_for_status(x))
+  res <- httr::warn_for_status(x)
+  if(inherits(res, "response")) {
+    httr::content(res)
+  } else {
+    res
+  }
 }
 #' @rdname result_handlers
 #' @export
 content_or_message <- function(x) {
-  httr::content(httr::message_for_status(x))
+  res <- httr::message_for_status(x)
+  if(inherits(res, "response")) {
+    httr::content(res)
+  } else {
+    res
+  }
 }
 
 #' Get Operations Definitions
