@@ -4,3 +4,6 @@
 ^readme\.*
 ^readme_cache\.*
 ^img\.*
+^.*\.Rmd$
+^.*\.md$
+^.*\.html$

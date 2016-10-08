@@ -4,10 +4,12 @@
 \alias{get_operation_definitions}
 \title{Get Operations Definitions}
 \usage{
-get_operation_definitions(api, tags = NULL)
+get_operation_definitions(api, path = NULL)
 }
 \arguments{
 \item{api}{API object}
+
+\item{path}{(optional) filter by path}
 }
 \description{
 A list of operations definitions organized by operationId field

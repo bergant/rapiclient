@@ -2,14 +2,20 @@
 % Please edit documentation in R/operations.R
 \name{get_operations}
 \alias{get_operations}
-\title{Create Operation Functions}
+\title{Get Operations}
 \usage{
-get_operations(api, .headers = NULL)
+get_operations(api, .headers = NULL, path = NULL,
+  handle_response = identity)
 }
 \arguments{
 \item{api}{API object (see \code{\link{get_api}})}
 
 \item{.headers}{Optional headers passed to \code{\link[httr]{add_headers}}}
+
+\item{path}{(optional) filter by path.}
+
+\item{handle_response}{(optional) A function with a single argument: httr
+response}
 }
 \value{
 A list of functions.
@@ -17,5 +23,7 @@ A list of functions.
 \description{
 Creates a list of functions from API operations definition.
 Names in a list are operationIDs from API.
+All functions return a \link[httr]{response} object from httr package or
+a value returned by \code{handle_response} function if specified.
 }
 

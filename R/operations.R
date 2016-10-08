@@ -13,28 +13,101 @@
 #' @export
 get_api <- function(url) {
   api <- jsonlite::fromJSON(url)
+
+  # swagger element is required
+  if(is.null(api$swagger)) {
+    warning("Missing Swagger Specification version")
+  }
+  # Info element is required
+  if(is.null(api$info)) {
+    warning("Missing Specification Info")
+  }
+  # If the host is not included, the host serving the documentation is to be
+  # used (including the port).
+  if(is.null(api$host)) {
+    host <- httr::parse_url(url)$host
+    if(!is.null(host)) {
+      port <- httr::parse_url(url)$port
+      if(!is.null(port)) {
+        host <- paste0(host, ":", port)
+      }
+      api$host <- host
+    }
+  }
+  # If basepath is not included, the API is served directly under the host
+  if(is.null(api$basePath)) {
+    api$basePath <- ""
+  }
+  # If the schemes is not included, the default scheme to be used is the one
+  # used to access the Swagger definition itself.
+  if(is.null(api$schemes)) {
+    api$schemes <- httr::parse_url(url)$scheme
+  }
+  if(is.null(api$paths)) {
+    warning("There is no paths element in the API specification")
+  }
+
   class(api) <- c(.class_api, class(api))
   api
 }
 
+#' Simple functions to handle httr response
+#'
+#' When creating operations from api one can define
+#' how the response from http should be handled.
+#' These functions can be used for simple result handling.
+#'
+#' @name result_handlers
+#' @param x A response object from httr functions (see \link{httr} documentation)
+#' @return Content of http response
+#' @export
+#' @examples
+#' \dontrun{
+#' operations <- get_operations(api, handle_response = content_or_stop)
+#' }
+content_or_stop <- function(x) {
+  httr::content(httr::stop_for_status(x))
+}
+
+#' @rdname result_handlers
+#' @export
+content_or_warning <- function(x) {
+  httr::content(httr::warn_for_status(x))
+}
+#' @rdname result_handlers
+#' @export
+content_or_message <- function(x) {
+  httr::content(httr::message_for_status(x))
+}
 
 #' Get Operations Definitions
 #'
 #' A list of operations definitions organized by operationId field
 #'
-#' @param  api API object
+#' @param api API object
+#' @param path (optional) filter by path
 #' @export
 #' @keywords internal
-get_operation_definitions <- function(api, tags = NULL) {
+get_operation_definitions <- function(api, path = NULL) {
   ret <- list()
-  for(path in names(api$paths)) {
-    for(action in names(api$paths[[path]])) {
+  path_names <- names(api$paths)
+  if(!is.null(path)) {
+    path_names <- path_names[grep(path, path_names)]
+  }
+  for(path in path_names) {
+    for(action in intersect(names(api$paths[[path]]), c("post", "get", "delete", "put"))) {
       operation <- api$paths[[path]][[action]]
       operation$path = path
       operation$action = action
       if(is.null(operation$operationId)) {
         # sometimes there is no operationId? (http://developer.nytimes.com/top_stories_v2.json/swagger.json)
-        operation$operationId <- gsub(" ", "_", operation$summary)
+        if(!is.null(operation$summary)) {
+          operation$operationId <- gsub(" ", "_", operation$summary)
+        } else {
+          operation$operationId <- gsub("[{}]", "", operation$path)
+          operation$operationId <- gsub("/", "_", operation$operationId)
+          operation$operationId <- gsub("^_", "", operation$operationId)
+        }
       }
       ret <- c(ret, setNames(list(operation), operation$operationId))
     }
@@ -44,25 +117,31 @@ get_operation_definitions <- function(api, tags = NULL) {
 
 
 
-#' Create Operation Functions
+#' Get Operations
 #'
 #' Creates a list of functions from API operations definition.
 #' Names in a list are operationIDs from API.
+#' All functions return a \link[httr]{response} object from httr package or
+#' a value returned by \code{handle_response} function if specified.
 #'
 #' @param api API object (see \code{\link{get_api}})
 #' @param .headers Optional headers passed to \code{\link[httr]{add_headers}}
+#' @param path (optional) filter by path.
+#' @param handle_response (optional) A function with a single argument: httr
+#'   response
 #' @return A list of functions.
 #' @export
-get_operations <- function(api, .headers = NULL) {
+get_operations <- function(api, .headers = NULL, path = NULL,
+                           handle_response = identity) {
 
-  operation_defs <- get_operation_definitions(api)
+  operation_defs <- get_operation_definitions(api, path)
 
   lapply(operation_defs, function(op_def){
 
     # url
     get_url <- function(x) {
 
-      operation_url <- paste0("http://", api$host, api$basePath, op_def$path)
+      operation_url <- paste0(api$schemes[1], "://", api$host, api$basePath, op_def$path)
       if(length(op_def$parameters)) {
 
         # parameters in path
@@ -87,58 +166,76 @@ get_operations <- function(api, .headers = NULL) {
         )
         operation_url <- paste0(operation_url, "?", url_query)
       }
-      httr::build_url(httr::parse_url(operation_url))
+      url_ret <- httr::build_url(httr::parse_url(operation_url))
+      return(url_ret)
     }
 
     # message body
     get_message_body <- function(x) {
-      jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
+      json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
+
+      if(getOption("rapiclient.log_request", default = FALSE)) {
+        cat(json, "\n",
+            file = file.path(
+              getOption("rapiclient.log_request_path", "rapiclient_log.json")
+            ), append = FALSE
+        )
+      }
+      json
     }
 
     # function body
     if(op_def$action == "post") {
       tmp_fun <- function() {
-        x <- lapply(as.list(match.call())[-1], eval)
+        #x <- lapply(as.list(match.call())[-1], eval)
+        l1 <- as.list(mget(names(formals()), environment()))
+        l1 <- l1[lapply(l1, mode) != "name"]
+        x <- l1[ !sapply(l1, is.null)]
+
         request_json <- get_message_body(x)
-        httr::POST(
+        result <- httr::POST(
           url = get_url(x),
           body = request_json,
           httr::content_type("application/json"),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
+        handle_response(result)
       }
     } else if(op_def$action == "put") {
       tmp_fun <- function() {
         x <- lapply(as.list(match.call())[-1], eval)
         request_json <- get_message_body(x)
-        httr::PUT(
+        result <- httr::PUT(
           url = get_url(x),
           body = request_json,
           httr::content_type("application/json"),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
+        handle_response(result)
       }
     } else if(op_def$action == "get") {
       tmp_fun <- function() {
         x <- lapply(as.list(match.call())[-1], eval)
-        httr::GET(
+        result <- httr::GET(
           url = get_url(x),
           httr::content_type("application/json"),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
+        handle_response(result)
       }
     } else if(op_def$action == "delete") {
       tmp_fun <- function() {
         x <- lapply(as.list(match.call())[-1], eval)
-        httr::DELETE(
+        result <- httr::DELETE(
           url = get_url(x),
           httr::content_type("application/json"),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
+        handle_response(result)
       }
     }
 

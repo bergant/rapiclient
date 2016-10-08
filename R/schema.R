@@ -20,9 +20,12 @@ get_schema_function <- function(schema) {
   parameters <- setNames(vector("list", length(par_names)), par_names)
 
   f1 <- function() {
-    #return(as.list(match.call())[-1])
-    return(lapply(as.list(match.call())[-1], eval))
+    #return(lapply(as.list(match.call())[-1], eval))
 
+    # using formals() instead of match.call() to get the default values
+    l1 <- as.list(mget(names(formals()), environment()))
+    l1 <- l1[lapply(l1, mode) != "name"]
+    return(l1[ !sapply(l1, is.null)])
   }
 
   formals(f1) <- do.call(alist, parameters)
