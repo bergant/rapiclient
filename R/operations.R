@@ -202,7 +202,6 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     # function body
     if(op_def$action == "post") {
       tmp_fun <- function() {
-        #x <- lapply(as.list(match.call())[-1], eval)
         l1 <- as.list(mget(names(formals()), environment()))
         l1 <- l1[lapply(l1, mode) != "name"]
         x <- l1[ !sapply(l1, is.null)]
@@ -219,7 +218,6 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "put") {
       tmp_fun <- function() {
-        #x <- lapply(as.list(match.call())[-1], eval)
         l1 <- as.list(mget(names(formals()), environment()))
         l1 <- l1[lapply(l1, mode) != "name"]
         x <- l1[ !sapply(l1, is.null)]
@@ -236,10 +234,13 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "get") {
       tmp_fun <- function() {
-#        x <- lapply(as.list(match.call())[-1], eval)
-        l1 <- as.list(mget(names(formals()), environment()))
-        l1 <- l1[lapply(l1, mode) != "name"]
-        x <- l1[ !sapply(l1, is.null)]
+        if(length(formals()) > 0 ) {
+          l1 <- as.list(mget(names(formals()), environment()))
+          l1 <- l1[lapply(l1, mode) != "name"]
+          x <- l1[ !sapply(l1, is.null)]
+        } else {
+          x <- list()
+        }
 
         result <- httr::GET(
           url = get_url(x),
@@ -251,7 +252,6 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "delete") {
       tmp_fun <- function() {
-#        x <- lapply(as.list(match.call())[-1], eval)
         l1 <- as.list(mget(names(formals()), environment()))
         l1 <- l1[lapply(l1, mode) != "name"]
         x <- l1[ !sapply(l1, is.null)]

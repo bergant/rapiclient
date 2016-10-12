@@ -23,7 +23,6 @@ print.rapi_api <- function(x, ...) {
 
 print_schema <- function(api, x, name = NULL) {
   properties <- x$properties
-  p_name <- names(properties)[5]
   schema_refs <- c()
   if(!is.null(name)) cat(name, "\n")
   for(p_name in names(properties)) {
