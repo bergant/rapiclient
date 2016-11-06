@@ -69,9 +69,10 @@ get_schema_structure <- function(api, x, name = NULL) {
         schema_struct$edges,
         data.frame(from = name, to = basename(schema_refs), stringsAsFactors = FALSE)))
     }
+    walked <- sprintf("#/definitions/%s",sapply(schema_struct$nodes, getElement, "name"))
     schemas <- lapply(schema_refs, function(x) get_schema(api, x))
     names(schemas) <- schema_refs
-    for(schema in names(schemas)) {
+    for(schema in setdiff(names(schemas), walked)) {
       schema_walk(api, schemas[[schema]], gsub("^#/definitions/","", schema))
     }
   }
