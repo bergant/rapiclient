@@ -3,6 +3,7 @@
 .class_api <- "rapi_api"
 .class_operation <- "rapi_operation"
 .class_schema <- "rapi_schema"
+.class_schema_function <- "rapi_schema_function"
 
 #' Get API
 #'
@@ -124,7 +125,7 @@ get_operation_definitions <- function(api, path = NULL) {
           operation$operationId <- gsub("^_", "", operation$operationId)
         }
       }
-      ret <- c(ret, setNames(list(operation), operation$operationId))
+      ret <- c(ret, stats::setNames(list(operation), operation$operationId))
     }
   }
   ret
@@ -313,7 +314,7 @@ get_parameters <- function(api, parameters_def) {
 
   if(length(parameters)) {
     parameters <- unlist(parameters)
-    parameters <- setNames(vector("list", length(parameters)), parameters)
+    parameters <- stats::setNames(vector("list", length(parameters)), parameters)
   }
   return(parameters)
 

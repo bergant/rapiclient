@@ -11,7 +11,7 @@
 #' @keywords internal
 get_schema_structure <- function(api, x, name = NULL) {
   if(is.null(name)) {
-    name <- tail(as.character(substitute(x)),1)
+    name <- utils::tail(as.character(substitute(x)),1)
   }
 
   schema_struct <- list(
@@ -105,7 +105,7 @@ get_schema_structure <- function(api, x, name = NULL) {
 #' @keywords internal
 get_schema_graphviz_dot <- function(api, schema, schema_name = NULL, rankdir = "LR", gv_attrs = "") {
   if(is.null(schema_name)) {
-    schema_name <- tail(as.character(substitute(schema)), 1)
+    schema_name <- utils::tail(as.character(substitute(schema)), 1)
   }
 
   ss <- get_schema_structure(api, schema, schema_name)

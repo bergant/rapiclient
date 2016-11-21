@@ -17,7 +17,7 @@ get_schema <- function(api, ref) {
 #
 get_schema_function <- function(schema) {
   par_names <- names(schema$properties)
-  parameters <- setNames(vector("list", length(par_names)), par_names)
+  parameters <- stats::setNames(vector("list", length(par_names)), par_names)
 
   f1 <- function() {
     #return(lapply(as.list(match.call())[-1], eval))
@@ -29,6 +29,8 @@ get_schema_function <- function(schema) {
   }
 
   formals(f1) <- do.call(alist, parameters)
+  #attr(f1, "schema") <- schema
+  class(f1) <- c(.class_schema_function, class(f1))
   f1
 }
 
@@ -50,4 +52,40 @@ get_schemas <- function(api) {
     })
   names(function_list) <- names(api$definitions)
   function_list
+}
+
+
+#' Set default arguments
+#'
+#' Use this functions to simplify operation and schema functions with default
+#' arguments
+#'
+#' @param f function
+#' @param ... Parameters with default values
+#' @name default_arguments
+#' @return A function with new defaults on arguments
+#' @export
+set_default_args <- function (f, ...) {
+  args <- list(...)
+  formals(f)[names(args)] <- args
+  f
+}
+
+#' @param arguments A named list of arguments names and values
+#' @rdname default_arguments
+#' @export
+set_default_args_list <- function (f, arguments) {
+  formals(f)[names(arguments)] <- arguments
+  f
+}
+
+#' @param f_call A function call
+#' @rdname default_arguments
+#' @export
+#' @keywords internal
+set_default_args_call <- function(f_call) {
+  arguments <- as.list(substitute(f_call)[-1])
+  f <- eval(substitute(f_call)[[1]])
+  formals(f)[names(arguments)] <- arguments
+  f
 }
