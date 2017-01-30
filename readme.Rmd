@@ -4,6 +4,8 @@ output:
     keep_md: yes
 ---
 
+<img src ="https://travis-ci.org/bergant/rapiclient.svg?branch=master"/>
+
 # __rapiclient__
 
 <img align="right" src="img/rapiclient_ani.gif"/>
@@ -143,7 +145,7 @@ nyt_operations <-
 res <- nyt_operations$Top_Stories(section = "science", format = "json")
 
 res$status_code
-
+ 
 content <- httr::content(res)
 str(content, max.level = 1)
 

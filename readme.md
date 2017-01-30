@@ -1,4 +1,6 @@
 
+<img src ="https://travis-ci.org/bergant/rapiclient.svg?branch=master"/>
+
 # __rapiclient__
 
 <img align="right" src="img/rapiclient_ani.gif"/>
@@ -218,16 +220,16 @@ res <- nyt_operations$Top_Stories(section = "science", format = "json")
 
 res$status_code
 # [1] 200
-
+ 
 content <- httr::content(res)
 str(content, max.level = 1)
 # List of 6
 #  $ status      : chr "OK"
-#  $ copyright   : chr "Copyright (c) 2016 The New York Times Company. All Rights Reserved."
+#  $ copyright   : chr "Copyright (c) 2017 The New York Times Company. All Rights Reserved."
 #  $ section     : chr "science"
-#  $ last_updated: chr "2016-05-26T14:15:22-04:00"
-#  $ num_results : int 35
-#  $ results     :List of 35
+#  $ last_updated: chr "2017-01-30T08:47:55-05:00"
+#  $ num_results : int 30
+#  $ results     :List of 30
 ```
 
 
