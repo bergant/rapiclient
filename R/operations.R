@@ -184,6 +184,47 @@ get_message_body <- function(x) {
   json
 }
 
+#' Build operations url
+#'
+#' Build operations url for operation and parameter values
+#'
+#' @param scheme http or https
+#' @param host host name with port (delimited by ":")
+#' @param base_path base path, defined in api specification
+#' @param op_def a single operation definition
+#' @param par_values parameter values in a list
+#' @keywords internal
+build_op_url <- function(scheme, host, base_path, op_def, par_values) {
+  path <- op_def$path
+  parameters <- op_def$parameters
+  query <- NULL
+
+  if(length(op_def$parameters)) {
+
+    # parameters in path
+    # example: GET /pet/{petId}
+    for(p in parameters$name[parameters$`in`=="path"]) {
+      if(!is.null(par_values[[p]])) {
+        path <- gsub(sprintf("\\{%s\\}", p), par_values[[p]], path)
+      }
+    }
+
+    # parameters in url query (after "?")
+    # example: GET /pet/findByStatus?status=available
+    if(any(parameters$`in`=="query")) {
+      query <- par_values[names(par_values) %in%
+                            parameters$name[parameters$`in`=="query"]]
+      query <- query[!vapply(query, is.null, FUN.VALUE = logical(1))]
+    }
+  }
+
+  # build url
+  httr::modify_url(
+    url = httr::parse_url(paste0(scheme, "://", host, base_path, path )),
+    query = query
+  )
+}
+
 
 #' Get Operations
 #'
@@ -238,47 +279,30 @@ get_operations <- function(api, .headers = NULL, path = NULL,
 
   operation_defs <- get_operation_definitions(api, path)
 
+  param_values <- expression({
+    if (length(formals()) > 0) {
+      l1 <- as.list(mget(names(formals()), environment()))
+      l1 <- l1[lapply(l1, mode) != "name"]
+      x <- l1[!sapply(l1, is.null)]
+    } else {
+      x <- list()
+    }
+    x
+  })
+
   lapply(operation_defs, function(op_def){
 
     # url
     get_url <- function(x) {
-
-      operation_url <-
-        paste0(api$schemes[1], "://", api$host, api$basePath, op_def$path)
-
-      if(length(op_def$parameters)) {
-
-        # parameters in path
-        pars_in_path <-
-          op_def$parameters[op_def$parameters$`in`=="path", "name"]
-        for(p in pars_in_path) {
-          if(!is.null(x[[p]])) {
-            operation_url <- gsub(sprintf("\\{%s\\}", p), x[[p]], operation_url)
-          }
-        }
-
-        # parameters in query
-        params_in_query <-
-          op_def$parameters[op_def$parameters$`in`=="query", "name"]
-        url_query <- paste(
-          unlist(
-            lapply(params_in_query, function(par_name) {
-              sprintf("%s=%s", par_name, x[[par_name]])
-            })
-          ),
-          collapse = "&"
-        )
-        operation_url <- paste0(operation_url, "?", url_query)
-      }
-      url_ret <- httr::build_url(httr::parse_url(operation_url))
-      return(url_ret)
+      url <- build_op_url(api$schemes[1], api$host, api$basePath, op_def, x)
+      return(url)
     }
 
 
     # function body
     if(op_def$action == "post") {
       tmp_fun <- function() {
-        x <- get_par_values(sys.function(sys.parent()), environment())
+        x <- eval(param_values)
         request_json <- get_message_body(x)
         result <- httr::POST(
           url = get_url(x),
@@ -291,7 +315,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "put") {
       tmp_fun <- function() {
-        x <- get_par_values(sys.function(sys.parent()), environment())
+        x <- eval(param_values)
         request_json <- get_message_body(x)
         result <- httr::PUT(
           url = get_url(x),
@@ -304,7 +328,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "get") {
       tmp_fun <- function() {
-        x <- get_par_values(sys.function(sys.parent()), environment())
+        x <- eval(param_values)
         result <- httr::GET(
           url = get_url(x),
           httr::content_type("application/json"),
@@ -315,8 +339,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "delete") {
       tmp_fun <- function() {
-        x <- get_par_values(sys.function(sys.parent()), environment())
-
+        x <- eval(param_values)
         result <- httr::DELETE(
           url = get_url(x),
           httr::content_type("application/json"),

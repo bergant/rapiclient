@@ -96,11 +96,48 @@ res$status_code
 str(httr::content(res))
 ```
 
+### Response Handlers
 
+If all operations are handled identically (e.g. reading content or stop 
+on http exception), it is more convenient to create the API functions
+with this functionality. `get_operations` accepts an optional handler
+function which must accept a httr response object as an argument.
 
-```{r echo=FALSE, cache=TRUE}
-res <- operations$deletePet(api_key = "special-key", petId = 42)
+Some handler functions are already predifined. For example `content_or_stop`
+returns a content or throws an exception.
+
+```{r, cache = TRUE}
+operations <- get_operations(pet_api, handle_response = content_or_stop)
+
+pet_data <- operations$getPetById(42)
+str(pet_data)
 ```
+
+Note that you can always trace the communication between client and server with `httr::with_verbose`:
+
+```{r, eval=FALSE, echo = TRUE}
+httr::with_verbose({
+  # get pet data
+  pet_data <- operations$getPetById(42)
+  # delete a pet entry
+  operations$deletePet(api_key = "special-key", petId = 42)
+})
+```
+
+```{r, cache=TRUE, eval = TRUE, echo=FALSE}
+cat(capture.output(type = "message",
+  
+  httr::with_verbose({
+    # get pet data
+    pet_data <- operations$getPetById(42)
+    # delete a pet entry
+    operations$deletePet(api_key = "special-key", petId = 42)
+  })
+
+))
+```
+
+
 
 ### Help on API Operations
 
@@ -150,6 +187,7 @@ content <- httr::content(res)
 str(content, max.level = 1)
 
 ```
+
 
 
 

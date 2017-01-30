@@ -117,7 +117,88 @@ str(httr::content(res))
 #  $ status   : chr "available"
 ```
 
+### Response Handlers
 
+If all operations are handled identically (e.g. reading content or stop 
+on http exception), it is more convenient to create the API functions
+with this functionality. `get_operations` accepts an optional handler
+function which must accept a httr response object as an argument.
+
+Some handler functions are already predifined. For example `content_or_stop`
+returns a content or throws an exception.
+
+
+```r
+operations <- get_operations(pet_api, handle_response = content_or_stop)
+
+pet_data <- operations$getPetById(42)
+str(pet_data)
+# List of 6
+#  $ id       : int 42
+#  $ category :List of 2
+#   ..$ id  : int 1
+#   ..$ name: chr "Undefined"
+#  $ name     : chr "Agrajag"
+#  $ photoUrls: list()
+#  $ tags     :List of 2
+#   ..$ :List of 2
+#   .. ..$ id  : int 1
+#   .. ..$ name: chr "Wild"
+#   ..$ :List of 2
+#   .. ..$ id  : int 2
+#   .. ..$ name: chr "Furry"
+#  $ status   : chr "available"
+```
+
+Note that you can always trace the communication between client and server with `httr::with_verbose`:
+
+
+```r
+httr::with_verbose({
+  # get pet data
+  pet_data <- operations$getPetById(42)
+  # delete a pet entry
+  operations$deletePet(api_key = "special-key", petId = 42)
+})
+```
+
+
+```
+# NULL
+# -> GET /v2/pet/42 HTTP/1.1
+ -> Host: petstore.swagger.io
+ -> User-Agent: libcurl/7.51.0 r-curl/2.3 httr/1.2.1
+ -> Accept-Encoding: gzip, deflate
+ -> Content-Type: application/json
+ -> Accept: application/json
+ -> 
+ <- HTTP/1.1 200 OK
+ <- Date: Mon, 30 Jan 2017 22:34:25 GMT
+ <- Access-Control-Allow-Origin: *
+ <- Access-Control-Allow-Methods: GET, POST, DELETE, PUT
+ <- Access-Control-Allow-Headers: Content-Type, api_key, Authorization
+ <- Content-Type: application/json
+ <- Connection: close
+ <- Server: Jetty(9.2.9.v20150224)
+ <- 
+ -> DELETE /v2/pet/42 HTTP/1.1
+ -> Host: petstore.swagger.io
+ -> User-Agent: libcurl/7.51.0 r-curl/2.3 httr/1.2.1
+ -> Accept-Encoding: gzip, deflate
+ -> Content-Type: application/json
+ -> Accept: application/json
+ -> Content-Length: 0
+ -> 
+ <- HTTP/1.1 200 OK
+ <- Date: Mon, 30 Jan 2017 22:34:26 GMT
+ <- Access-Control-Allow-Origin: *
+ <- Access-Control-Allow-Methods: GET, POST, DELETE, PUT
+ <- Access-Control-Allow-Headers: Content-Type, api_key, Authorization
+ <- Content-Type: application/json
+ <- Connection: close
+ <- Server: Jetty(9.2.9.v20150224)
+ <- 
+```
 
 
 
@@ -227,10 +308,11 @@ str(content, max.level = 1)
 #  $ status      : chr "OK"
 #  $ copyright   : chr "Copyright (c) 2017 The New York Times Company. All Rights Reserved."
 #  $ section     : chr "science"
-#  $ last_updated: chr "2017-01-30T08:47:55-05:00"
-#  $ num_results : int 30
-#  $ results     :List of 30
+#  $ last_updated: chr "2017-01-30T17:27:13-05:00"
+#  $ num_results : int 34
+#  $ results     :List of 34
 ```
+
 
 
 
