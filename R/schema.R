@@ -20,16 +20,13 @@ get_schema_function <- function(schema) {
   parameters <- stats::setNames(vector("list", length(par_names)), par_names)
 
   f1 <- function() {
-    #return(lapply(as.list(match.call())[-1], eval))
-
-    # using formals() instead of match.call() to get the default values
     l1 <- as.list(mget(names(formals()), environment()))
     l1 <- l1[lapply(l1, mode) != "name"]
-    return(l1[ !sapply(l1, is.null)])
+    return(l1[ !vapply(l1, is.null, logical(1))])
   }
 
   formals(f1) <- do.call(alist, parameters)
-  #attr(f1, "schema") <- schema
+  attr(f1, "schema_name") <- attr(schema, "name")
   class(f1) <- c(.class_schema_function, class(f1))
   f1
 }

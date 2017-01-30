@@ -7,3 +7,4 @@
 ^.*\.Rmd$
 ^.*\.md$
 ^.*\.html$
+^.travis\.yml$

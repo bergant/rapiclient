@@ -2,7 +2,7 @@
 % Please edit documentation in R/graph.R
 \name{get_schema_graphviz_dot}
 \alias{get_schema_graphviz_dot}
-\title{Get schema graphviz dot}
+\title{Get schema graphviz dot (experimental in this version)}
 \usage{
 get_schema_graphviz_dot(api, schema, schema_name = NULL, rankdir = "LR",
   gv_attrs = "")

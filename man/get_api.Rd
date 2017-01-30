@@ -13,6 +13,17 @@ get_api(url)
 API object
 }
 \description{
-Get swagger API from url
+Create API object from Swagger specification
+}
+\examples{
+\dontrun{
+# create operation and schema functions
+api <- get_api(api_url)
+operations <- get_operations(api)
+schemas <- get_schemas(api)
+}
+}
+\seealso{
+See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 }
 

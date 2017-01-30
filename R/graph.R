@@ -1,8 +1,8 @@
-#' Get schema structure
+#' Get schema structure (experimental in this version)
 #'
-#' (experimental) Produces nodes and edges where nodes are a list of schemas, represented as
-#' data frames with schema properties and edges are relations between nested
-#' schemas
+#' (experimental) Produces nodes and edges where nodes are a list of schemas,
+#' represented as data frames with schema properties and edges are relations
+#' between nested schemas
 #'
 #' @param api Api object
 #' @param x A schema definition from api (a list object)
@@ -27,13 +27,18 @@ get_schema_structure <- function(api, x, name = NULL) {
     if(!is.null(x$allOf)) {
       #properties <- x$allOf$properties[x$allOf$properties]
       if(!is.null(x$allOf$`$ref`)) {
-        properties <- lapply(x$allOf$properties, function(x) list(type = x$type[!is.na(x$type)]))
+        if(!is.null(x$type)) {
+          properties <-
+            lapply(x$allOf$properties, function(x) {
+              list(type = x$type[!is.na(x$type)])
+            })
+        }
         schema_allof <- x$allOf$`$ref`[!is.na(x$allOf$`$ref`)]
         schema_refs <- c(schema_refs, schema_allof )
         properties$`*` <- list(type = basename(schema_allof))
       }
     }
-    if(x$type == "array") {
+    if(!is.null(x$type) && x$type == "array") {
       if(!is.null(x$items$`$ref`)) {
         schema_refs <- c(schema_refs, x$items$`$ref`)
       }
@@ -53,7 +58,8 @@ get_schema_structure <- function(api, x, name = NULL) {
           type <- paste0(type, "[", properties[[p_name]]$items$type, "]")
         }
         if(!is.null(properties[[p_name]]$items$`$ref`)) {
-          subtype <- gsub("^#/definitions/","", properties[[p_name]]$items$`$ref`)
+          subtype <- gsub("^#/definitions/", "",
+                          properties[[p_name]]$items$`$ref`)
           type <- paste0(type, "[", subtype, "]")
           schema_refs <- c(schema_refs, properties[[p_name]]$items$`$ref`)
         }
@@ -67,26 +73,35 @@ get_schema_structure <- function(api, x, name = NULL) {
     if(length(schema_refs > 0)) {
       schema_struct$edges <<- unique(rbind(
         schema_struct$edges,
-        data.frame(from = name, to = basename(schema_refs), stringsAsFactors = FALSE)))
+        data.frame(from = name, to = basename(schema_refs),
+                   stringsAsFactors = FALSE)))
     }
-    walked <- sprintf("#/definitions/%s",sapply(schema_struct$nodes, getElement, "name"))
+    walked <- sprintf(
+      "#/definitions/%s",
+      vapply(schema_struct$nodes, getElement, character(1), "name"))
     schemas <- lapply(schema_refs, function(x) get_schema(api, x))
     names(schemas) <- schema_refs
     for(schema in setdiff(names(schemas), walked)) {
-      schema_walk(api, schemas[[schema]], gsub("^#/definitions/","", schema))
+      schema_walk(
+        api, schemas[[schema]],
+        gsub("^#/definitions/","", schema))
     }
   }
 
   schema_walk(api = api, x = x, name = name)
 
-  node_names <- sapply(schema_struct$nodes, getElement, "name")
+  node_names <-
+    vapply(schema_struct$nodes, getElement, character(1), "name")
 
   schema_struct$nodes <-
     lapply(schema_struct$nodes, function(x) {
       data.frame(
-        name = sapply(x$properties, function(p) p$name),
-        type = sapply(x$properties, function(p) p$type),
-        description = sapply(x$properties, function(p) p$description),
+        name = vapply(x$properties, function(p) p$name, character(1)),
+        type = vapply(x$properties, function(p) p$type, character(1)),
+        description = vapply(
+          x$properties,
+          function(p) ifelse(is.na(p$description), "", p$description),
+          character(1)),
         stringsAsFactors = FALSE
       )
     })
@@ -94,7 +109,7 @@ get_schema_structure <- function(api, x, name = NULL) {
   schema_struct
 }
 
-#' Get schema graphviz dot
+#' Get schema graphviz dot (experimental in this version)
 #'
 #' Create a graphviz presentation of schema structure (experimental)
 #'
@@ -103,7 +118,8 @@ get_schema_structure <- function(api, x, name = NULL) {
 #' @param schema_name A name of root schema
 #' @export
 #' @keywords internal
-get_schema_graphviz_dot <- function(api, schema, schema_name = NULL, rankdir = "LR", gv_attrs = "") {
+get_schema_graphviz_dot <- function(api, schema, schema_name = NULL,
+                                    rankdir = "LR", gv_attrs = "") {
   if(is.null(schema_name)) {
     schema_name <- utils::tail(as.character(substitute(schema)), 1)
   }
@@ -115,7 +131,7 @@ get_schema_graphviz_dot <- function(api, schema, schema_name = NULL, rankdir = "
     rankdir,
     gv_attrs,
     paste0(
-      sapply(names(ss$nodes), function(n) {
+      vapply(names(ss$nodes), function(n) {
         paste0(
           '"',n,'"', '[shape = "Mrecord", label="',
           n, "|",
@@ -126,7 +142,7 @@ get_schema_graphviz_dot <- function(api, schema, schema_name = NULL, rankdir = "
           '"]\n',
           collapse = ""
         )
-      }),
+      }, FUN.VALUE = character(1)),
       collapse = "\n"
     ),
     paste(

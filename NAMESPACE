@@ -2,6 +2,7 @@
 
 S3method(print,rapi_api)
 S3method(print,rapi_operation)
+S3method(print,rapi_schema_function)
 export(content_or_message)
 export(content_or_stop)
 export(content_or_warning)

@@ -10,7 +10,7 @@ get_parameters(api, parameters_def)
 \item{parameters_def}{A parameters data frame from API operations  definition}
 }
 \description{
-Exctract all parameters from parameters definition as a list
+Extract all parameters from parameters definition as a list
 In case of reference to schema, use the schema.
 }
 \keyword{internal}

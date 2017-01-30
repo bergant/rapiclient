@@ -83,13 +83,20 @@ print.rapi_operation <- function(x, ...) {
     for(i in seq_len(nrow(op_def$parameters))) {
       if(!is.null(op_def$parameters[i,]$schema$`$ref`) &&
          !is.na(  op_def$parameters[i,]$schema$`$ref`)) {
-        schema_name <- gsub("^#/definitions/","", op_def$parameters[i,"schema"]$`$ref`)
-        #cat("(from", schema_name, "schema:)\n")
-        print_schema(api, get_schema(api, op_def$parameters[i,"schema"]$`$ref`))
+        schema_name <-
+          gsub("^#/definitions/","", op_def$parameters[i,"schema"]$`$ref`)
+        print_schema(
+          api,
+          get_schema(api, op_def$parameters[i,"schema"]$`$ref`)
+        )
       } else if(!is.null(op_def$parameters[i,]$schema$items$`$ref`)) {
-        schema_name <- gsub("^#/definitions/","", op_def$parameters[i,"schema"]$items$`$ref`)
+        schema_name <-
+          gsub("^#/definitions/","", op_def$parameters[i,"schema"]$items$`$ref`)
         cat("Array of", schema_name, ":\n")
-        print_schema(api, get_schema(api, op_def$parameters[i,"schema"]$items$`$ref`))
+        print_schema(
+          api,
+          get_schema(api, op_def$parameters[i,"schema"]$items$`$ref`)
+        )
       } else {
         pars <- op_def$parameters[i, ]
         type <- pars$type
@@ -97,7 +104,6 @@ print.rapi_operation <- function(x, ...) {
         if(!is.null(subtype)) {
           type <- paste0(type, "[", subtype, "]")
         }
-
         cat("  ", pars$name, " (", type, ")\n    ", pars$description, sep = "")
       }
       cat("\n")
@@ -105,3 +111,22 @@ print.rapi_operation <- function(x, ...) {
   }
 
 }
+
+#' Print Operation
+#'
+#' @param x Operation
+#' @param ...further arguments passed to or from other methods
+#' @export
+#' @keywords internal
+print.rapi_schema_function <- function(x, ...) {
+  cat(
+    "    ",
+    attr(x, "schema_name"),
+    "(",
+    paste(names(formals(x)), collapse = ", "),
+    ")",
+    sep = ""
+  )
+}
+
+

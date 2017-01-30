@@ -7,10 +7,18 @@
 
 #' Get API
 #'
-#' Get swagger API from url
+#' Create API object from Swagger specification
 #'
 #' @param url Api url
+#' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #' @return API object
+#' @examples
+#' \dontrun{
+#' # create operation and schema functions
+#' api <- get_api(api_url)
+#' operations <- get_operations(api)
+#' schemas <- get_schemas(api)
+#' }
 #' @export
 get_api <- function(url) {
   api <- jsonlite::fromJSON(url)
@@ -52,14 +60,17 @@ get_api <- function(url) {
   api
 }
 
-#' Simple functions to handle httr response
+#' Simple functions to handle http response
 #'
 #' When creating operations from api one can define
 #' how the response from http should be handled.
 #' These functions can be used for simple result handling.
 #'
+#' See \code{\link{get_operations}} for details.
+#'
 #' @name result_handlers
-#' @param x A response object from httr functions (see \link{httr} documentation)
+#' @param x A response object from httr package (see \link[httr]{response}
+#'   object in \pkg{httr} package  documentation)
 #' @return Content of http response
 #' @export
 #' @examples
@@ -75,7 +86,7 @@ content_or_stop <- function(x) {
   }
 }
 
-#' @rdname result_handlers
+#' @describeIn result_handlers Returns content or issues a warning
 #' @export
 content_or_warning <- function(x) {
   res <- httr::warn_for_status(x)
@@ -85,7 +96,7 @@ content_or_warning <- function(x) {
     res
   }
 }
-#' @rdname result_handlers
+#' @describeIn result_handlers Returns content or prints a message
 #' @export
 content_or_message <- function(x) {
   res <- httr::message_for_status(x)
@@ -111,12 +122,15 @@ get_operation_definitions <- function(api, path = NULL) {
     path_names <- path_names[grep(path, path_names)]
   }
   for(path in path_names) {
-    for(action in intersect(names(api$paths[[path]]), c("post", "get", "delete", "put"))) {
+    action_types <- c("post", "get", "delete", "put")
+    for(action in intersect(names(api$paths[[path]]), action_types)) {
       operation <- api$paths[[path]][[action]]
-      operation$path = path
-      operation$action = action
+      operation$path <- path
+      operation$action <- action
       if(is.null(operation$operationId)) {
-        # sometimes there is no operationId? (http://developer.nytimes.com/top_stories_v2.json/swagger.json)
+        # sometimes there is no operationId?
+        # example:
+        #  (http://developer.nytimes.com/top_stories_v2.json/swagger.json)
         if(!is.null(operation$summary)) {
           operation$operationId <- gsub(" ", "_", operation$summary)
         } else {
@@ -131,21 +145,93 @@ get_operation_definitions <- function(api, path = NULL) {
   ret
 }
 
+#' Get parameter values
+#'
+#' Returns parameters, passed to a function with default parameters
+#'
+#' @param fun A function (to be passed to formals)
+#' @param env environment
+#' @return A named list of parameters
+#' @keywords internal
+get_par_values <- function(fun, env) {
+  if(length(formals()) > 0 ) {
+    l1 <- as.list(mget(names(formals(fun)), env))
+    l1 <- l1[lapply(l1, mode) != "name"]
+    x <- l1[ !vapply(l1, is.null, logical(1))]
+  } else {
+    x <- list()
+  }
+  x
+}
+
+
+#' Message body
+#'
+#' Transform a list to http request message body
+#'
+#' @param x A list
+#' @keywords internal
+get_message_body <- function(x) {
+  json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
+
+  if(getOption("rapiclient.log_request", default = FALSE)) {
+    cat(json, "\n",
+        file = file.path(
+          getOption("rapiclient.log_request_path", "rapiclient_log.json")
+        ), append = FALSE
+    )
+  }
+  json
+}
 
 
 #' Get Operations
 #'
-#' Creates a list of functions from API operations definition.
-#' Names in a list are operationIDs from API.
-#' All functions return a \link[httr]{response} object from httr package or
-#' a value returned by \code{handle_response} function if specified.
+#' Creates a list of functions from API operations definition. Names in a list
+#' are operationIDs from API.
+#'
+#' All functions return a \link[httr]{response} object from httr package or a
+#' value returned by \code{handle_response} function if specified. When
+#' \code{path} is defined, only operations with the specified API path root are
+#' created. Use \code{.headers} parameters to send additional headers when
+#' sending a request.
+#'
+#' @section Handling response:
+#'
+#'   If no response handler function is defined, operation functions return
+#'   \link[httr]{response} object (\pkg{httr} package). See httr
+#'   \link[httr]{content} documentation for extracting content from a request,
+#'   and functions \link[httr]{http_error} and \link[httr]{http_status} how to
+#'   handle http errors and error messages.
+#'
+#'   When using simple \code{\link{result_handlers}}, operations will return the
+#'   content of response instead of httr response object (or handle error as
+#'   exception or warning in case of error).
+#'
+#'   To handle response automatically with custom function, define a function
+#'   with httr response object as argument and pass it as \code{handle_response}
+#'   argument to \code{get_operations} function.
 #'
 #' @param api API object (see \code{\link{get_api}})
-#' @param .headers Optional headers passed to \code{\link[httr]{add_headers}}
-#' @param path (optional) filter by path.
+#' @param .headers Optional headers passed to httr functions. See
+#'   \code{\link[httr]{add_headers}} documentation
+#' @param path (optional) filter by path from API specification
 #' @param handle_response (optional) A function with a single argument: httr
 #'   response
 #' @return A list of functions.
+#' @examples
+#' \dontrun{
+#' # create operation and schema functions
+#' api <- get_api(api_url)
+#' operations <- get_operations(api)
+#' schemas <- get_schemas(api)
+#'
+#' # get operations which return content or stop on error
+#' operations <- get_operations(api, handle_response = content_or_stop)
+#'
+#' # use .headers when operations must send additional heders when sending request
+#' operations <- get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+#' }
 #' @export
 get_operations <- function(api, .headers = NULL, path = NULL,
                            handle_response = identity) {
@@ -157,7 +243,9 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     # url
     get_url <- function(x) {
 
-      operation_url <- paste0(api$schemes[1], "://", api$host, api$basePath, op_def$path)
+      operation_url <-
+        paste0(api$schemes[1], "://", api$host, api$basePath, op_def$path)
+
       if(length(op_def$parameters)) {
 
         # parameters in path
@@ -186,31 +274,11 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       return(url_ret)
     }
 
-    # message body
-    get_message_body <- function(x) {
-      json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
-
-      if(getOption("rapiclient.log_request", default = FALSE)) {
-        cat(json, "\n",
-            file = file.path(
-              getOption("rapiclient.log_request_path", "rapiclient_log.json")
-            ), append = FALSE
-        )
-      }
-      json
-    }
 
     # function body
     if(op_def$action == "post") {
       tmp_fun <- function() {
-        if(length(formals()) > 0 ) {
-          l1 <- as.list(mget(names(formals()), environment()))
-          l1 <- l1[lapply(l1, mode) != "name"]
-          x <- l1[ !sapply(l1, is.null)]
-        } else {
-          x <- list()
-        }
-
+        x <- get_par_values(sys.function(sys.parent()), environment())
         request_json <- get_message_body(x)
         result <- httr::POST(
           url = get_url(x),
@@ -223,14 +291,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "put") {
       tmp_fun <- function() {
-        if(length(formals()) > 0 ) {
-          l1 <- as.list(mget(names(formals()), environment()))
-          l1 <- l1[lapply(l1, mode) != "name"]
-          x <- l1[ !sapply(l1, is.null)]
-        } else {
-          x <- list()
-        }
-
+        x <- get_par_values(sys.function(sys.parent()), environment())
         request_json <- get_message_body(x)
         result <- httr::PUT(
           url = get_url(x),
@@ -243,14 +304,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "get") {
       tmp_fun <- function() {
-        if(length(formals()) > 0 ) {
-          l1 <- as.list(mget(names(formals()), environment()))
-          l1 <- l1[lapply(l1, mode) != "name"]
-          x <- l1[ !sapply(l1, is.null)]
-        } else {
-          x <- list()
-        }
-
+        x <- get_par_values(sys.function(sys.parent()), environment())
         result <- httr::GET(
           url = get_url(x),
           httr::content_type("application/json"),
@@ -261,13 +315,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       }
     } else if(op_def$action == "delete") {
       tmp_fun <- function() {
-        if(length(formals()) > 0 ) {
-          l1 <- as.list(mget(names(formals()), environment()))
-          l1 <- l1[lapply(l1, mode) != "name"]
-          x <- l1[ !sapply(l1, is.null)]
-        } else {
-          x <- list()
-        }
+        x <- get_par_values(sys.function(sys.parent()), environment())
 
         result <- httr::DELETE(
           url = get_url(x),
@@ -296,7 +344,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
 
 #' Get Parameters
 #'
-#' Exctract all parameters from parameters definition as a list
+#' Extract all parameters from parameters definition as a list
 #' In case of reference to schema, use the schema.
 #' @param parameters_def A parameters data frame from API operations  definition
 #' @keywords internal
@@ -314,9 +362,11 @@ get_parameters <- function(api, parameters_def) {
 
   if(length(parameters)) {
     parameters <- unlist(parameters)
-    parameters <- stats::setNames(vector("list", length(parameters)), parameters)
+    parameters <- stats::setNames(
+      vector("list", length(parameters)),
+      parameters
+    )
   }
-  return(parameters)
-
+  parameters
 }
 

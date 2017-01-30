@@ -2,7 +2,7 @@
 % Please edit documentation in R/graph.R
 \name{get_schema_structure}
 \alias{get_schema_structure}
-\title{Get schema structure}
+\title{Get schema structure (experimental in this version)}
 \usage{
 get_schema_structure(api, x, name = NULL)
 }
@@ -14,9 +14,9 @@ get_schema_structure(api, x, name = NULL)
 \item{name}{A name of root schema}
 }
 \description{
-(experimental) Produces nodes and edges where nodes are a list of schemas, represented as
-data frames with schema properties and edges are relations between nested
-schemas
+(experimental) Produces nodes and edges where nodes are a list of schemas,
+represented as data frames with schema properties and edges are relations
+between nested schemas
 }
 \keyword{internal}
 

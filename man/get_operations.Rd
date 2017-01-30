@@ -10,9 +10,10 @@ get_operations(api, .headers = NULL, path = NULL,
 \arguments{
 \item{api}{API object (see \code{\link{get_api}})}
 
-\item{.headers}{Optional headers passed to \code{\link[httr]{add_headers}}}
+\item{.headers}{Optional headers passed to httr functions. See
+\code{\link[httr]{add_headers}} documentation}
 
-\item{path}{(optional) filter by path.}
+\item{path}{(optional) filter by path from API specification}
 
 \item{handle_response}{(optional) A function with a single argument: httr
 response}
@@ -21,9 +22,45 @@ response}
 A list of functions.
 }
 \description{
-Creates a list of functions from API operations definition.
-Names in a list are operationIDs from API.
-All functions return a \link[httr]{response} object from httr package or
-a value returned by \code{handle_response} function if specified.
+Creates a list of functions from API operations definition. Names in a list
+are operationIDs from API.
+}
+\details{
+All functions return a \link[httr]{response} object from httr package or a
+value returned by \code{handle_response} function if specified. When
+\code{path} is defined, only operations with the specified API path root are
+created. Use \code{.headers} parameters to send additional headers when
+sending a request.
+}
+\section{Handling response}{
+
+
+  If no response handler function is defined, operation functions return
+  \link[httr]{response} object (\pkg{httr} package). See httr
+  \link[httr]{content} documentation for extracting content from a request,
+  and functions \link[httr]{http_error} and \link[httr]{http_status} how to
+  handle http errors and error messages.
+
+  When using simple \code{\link{result_handlers}}, operations will return the
+  content of response instead of httr response object (or handle error as
+  exception or warning in case of error).
+
+  To handle response automatically with custom function, define a function
+  with httr response object as argument and pass it as \code{handle_response}
+  argument to \code{get_operations} function.
+}
+\examples{
+\dontrun{
+# create operation and schema functions
+api <- get_api(api_url)
+operations <- get_operations(api)
+schemas <- get_schemas(api)
+
+# get operations which return content or stop on error
+operations <- get_operations(api, handle_response = content_or_stop)
+
+# use .headers when operations must send additional heders when sending request
+operations <- get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+}
 }
 

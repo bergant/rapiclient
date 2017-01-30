@@ -5,7 +5,7 @@
 \alias{content_or_stop}
 \alias{content_or_warning}
 \alias{result_handlers}
-\title{Simple functions to handle httr response}
+\title{Simple functions to handle http response}
 \usage{
 content_or_stop(x)
 
@@ -14,7 +14,8 @@ content_or_warning(x)
 content_or_message(x)
 }
 \arguments{
-\item{x}{A response object from httr functions (see \link{httr} documentation)}
+\item{x}{A response object from httr package (see \link[httr]{response}
+object in \pkg{httr} package  documentation)}
 }
 \value{
 Content of http response
@@ -24,6 +25,15 @@ When creating operations from api one can define
 how the response from http should be handled.
 These functions can be used for simple result handling.
 }
+\details{
+See \code{\link{get_operations}} for details.
+}
+\section{Functions}{
+\itemize{
+\item \code{content_or_warning}: Returns content or issues a warning
+
+\item \code{content_or_message}: Returns content or prints a message
+}}
 \examples{
 \dontrun{
 operations <- get_operations(api, handle_response = content_or_stop)
