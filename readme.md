@@ -124,7 +124,7 @@ on http exception), it is more convenient to create the API functions
 with this functionality. `get_operations` accepts an optional handler
 function which must accept a httr response object as an argument.
 
-Some handler functions are already predifined. For example `content_or_stop`
+Some handler functions are already predefined. For example `content_or_stop`
 returns a content or throws an exception.
 
 
