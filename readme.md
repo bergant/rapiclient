@@ -1,5 +1,5 @@
 
-<img src ="https://travis-ci.org/bergant/rapiclient.svg?branch=master"/>
+[![Build Status](https://travis-ci.org/bergant/rapiclient.svg?branch=master)](https://travis-ci.org/bergant/rapiclient)
 
 # __rapiclient__
 
