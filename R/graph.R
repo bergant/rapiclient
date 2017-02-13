@@ -25,18 +25,8 @@ get_schema_structure <- function(api, x, name = NULL) {
     schema_struct$nodes[[i]] <<- list(name = name, properties = list())
     properties <- x$properties
     if(!is.null(x$allOf)) {
-      #properties <- x$allOf$properties[x$allOf$properties]
-      if(!is.null(x$allOf$`$ref`)) {
-        if(!is.null(x$type)) {
-          properties <-
-            lapply(x$allOf$properties, function(x) {
-              list(type = x$type[!is.na(x$type)])
-            })
-        }
-        schema_allof <- x$allOf$`$ref`[!is.na(x$allOf$`$ref`)]
-        schema_refs <- c(schema_refs, schema_allof )
-        properties$`*` <- list(type = basename(schema_allof))
-      }
+      properties <- get_allOf(api, x$allOf)
+      properties <- c(x$properties, properties)
     }
     if(!is.null(x$type) && x$type == "array") {
       if(!is.null(x$items$`$ref`)) {
@@ -52,7 +42,7 @@ get_schema_structure <- function(api, x, name = NULL) {
         type <- gsub("^#/definitions/","",p$`$ref`)
         schema_refs <- c(schema_refs, p$`$ref`)
       }
-      if(type == "array" ) {
+      if(!is.null(type) && type == "array" ) {
         if(!is.null(properties[[p_name]]$items$type)) {
 
           type <- paste0(type, "[", properties[[p_name]]$items$type, "]")
@@ -63,6 +53,9 @@ get_schema_structure <- function(api, x, name = NULL) {
           type <- paste0(type, "[", subtype, "]")
           schema_refs <- c(schema_refs, properties[[p_name]]$items$`$ref`)
         }
+      }
+      if(is.null(type)) {
+        type <- ""
       }
       tmp_node <- list(name = p_name, type = type, description = description)
       schema_struct$nodes[[i]][["properties"]][[p_name]] <<- tmp_node
@@ -97,7 +90,7 @@ get_schema_structure <- function(api, x, name = NULL) {
     lapply(schema_struct$nodes, function(x) {
       data.frame(
         name = vapply(x$properties, function(p) p$name, character(1)),
-        type = vapply(x$properties, function(p) p$type, character(1)),
+        type = vapply(x$properties, function(p) p$type[[1]], character(1)),
         description = vapply(
           x$properties,
           function(p) ifelse(is.na(p$description), "", p$description),
@@ -106,6 +99,9 @@ get_schema_structure <- function(api, x, name = NULL) {
       )
     })
   names(schema_struct$nodes) <- node_names
+  schema_struct$nodes <- schema_struct$nodes[
+    vapply(schema_struct$nodes, nrow, integer(1)) > 0
+  ]
   schema_struct
 }
 

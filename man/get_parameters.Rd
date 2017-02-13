@@ -4,10 +4,12 @@
 \alias{get_parameters}
 \title{Get Parameters}
 \usage{
-get_parameters(api, parameters_def)
+get_parameters(api, api_parameters)
 }
 \arguments{
-\item{parameters_def}{A parameters data frame from API operations  definition}
+\item{api}{API definition}
+
+\item{parameters_def}{A parameters from API operations definition}
 }
 \description{
 Extract all parameters from parameters definition as a list

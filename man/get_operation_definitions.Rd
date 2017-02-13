@@ -12,7 +12,13 @@ get_operation_definitions(api, path = NULL)
 \item{path}{(optional) filter by path}
 }
 \description{
-A list of operations definitions organized by operationId field
+Get a list of operations definitions from API specification
+}
+\details{
+Operations are parsed from `paths`` element for every path and every action
+inside path. Operation name is set to `operationId` from each action.
+
+See also specification \url{http://swagger.io/specification/#operationObject}
 }
 \keyword{internal}
 

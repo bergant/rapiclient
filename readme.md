@@ -173,7 +173,7 @@ httr::with_verbose({
  -> Accept: application/json
  -> 
  <- HTTP/1.1 200 OK
- <- Date: Mon, 30 Jan 2017 22:34:25 GMT
+ <- Date: Thu, 09 Feb 2017 14:56:54 GMT
  <- Access-Control-Allow-Origin: *
  <- Access-Control-Allow-Methods: GET, POST, DELETE, PUT
  <- Access-Control-Allow-Headers: Content-Type, api_key, Authorization
@@ -190,7 +190,7 @@ httr::with_verbose({
  -> Content-Length: 0
  -> 
  <- HTTP/1.1 200 OK
- <- Date: Mon, 30 Jan 2017 22:34:26 GMT
+ <- Date: Thu, 09 Feb 2017 14:56:54 GMT
  <- Access-Control-Allow-Origin: *
  <- Access-Control-Allow-Methods: GET, POST, DELETE, PUT
  <- Access-Control-Allow-Headers: Content-Type, api_key, Authorization
@@ -237,6 +237,7 @@ operations$addPet
 #   photoUrls (array[string])
 #   tags (array[Tag])
 #   status (string)
+#     pet status in the store
 # Category 
 #   id (integer)
 #   name (string)
@@ -257,13 +258,14 @@ str(definition)
 #  $ description: chr "Returns a single pet"
 #  $ operationId: chr "getPetById"
 #  $ produces   : chr [1:2] "application/xml" "application/json"
-#  $ parameters :'data.frame':	1 obs. of  6 variables:
-#   ..$ name       : chr "petId"
-#   ..$ in         : chr "path"
-#   ..$ description: chr "ID of pet to return"
-#   ..$ required   : logi TRUE
-#   ..$ type       : chr "integer"
-#   ..$ format     : chr "int64"
+#  $ parameters :List of 1
+#   ..$ :List of 6
+#   .. ..$ name       : chr "petId"
+#   .. ..$ in         : chr "path"
+#   .. ..$ description: chr "ID of pet to return"
+#   .. ..$ required   : logi TRUE
+#   .. ..$ type       : chr "integer"
+#   .. ..$ format     : chr "int64"
 #  $ responses  :List of 3
 #   ..$ 200:List of 2
 #   .. ..$ description: chr "successful operation"
@@ -273,9 +275,9 @@ str(definition)
 #   .. ..$ description: chr "Invalid ID supplied"
 #   ..$ 404:List of 1
 #   .. ..$ description: chr "Pet not found"
-#  $ security   :'data.frame':	1 obs. of  1 variable:
-#   ..$ api_key:List of 1
-#   .. ..$ : list()
+#  $ security   :List of 1
+#   ..$ :List of 1
+#   .. ..$ api_key: list()
 #  $ path       : chr "/pet/{petId}"
 #  $ action     : chr "get"
 ```
@@ -308,9 +310,9 @@ str(content, max.level = 1)
 #  $ status      : chr "OK"
 #  $ copyright   : chr "Copyright (c) 2017 The New York Times Company. All Rights Reserved."
 #  $ section     : chr "science"
-#  $ last_updated: chr "2017-01-30T17:27:13-05:00"
-#  $ num_results : int 34
-#  $ results     :List of 34
+#  $ last_updated: chr "2017-02-09T09:53:18-05:00"
+#  $ num_results : int 27
+#  $ results     :List of 27
 ```
 
 

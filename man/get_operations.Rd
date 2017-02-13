@@ -2,7 +2,7 @@
 % Please edit documentation in R/operations.R
 \name{get_operations}
 \alias{get_operations}
-\title{Get Operations}
+\title{Get operations}
 \usage{
 get_operations(api, .headers = NULL, path = NULL,
   handle_response = identity)
@@ -59,8 +59,9 @@ schemas <- get_schemas(api)
 # get operations which return content or stop on error
 operations <- get_operations(api, handle_response = content_or_stop)
 
-# use .headers when operations must send additional heders when sending request
-operations <- get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+# use .headers when operations must send additional heders when sending
+operations <-
+  get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
 }
 }
 

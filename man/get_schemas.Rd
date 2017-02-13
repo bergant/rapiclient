@@ -2,7 +2,7 @@
 % Please edit documentation in R/schema.R
 \name{get_schemas}
 \alias{get_schemas}
-\title{Get Schemas}
+\title{Get schemas}
 \usage{
 get_schemas(api)
 }
@@ -13,8 +13,7 @@ get_schemas(api)
 A list of functions
 }
 \description{
-Returns a list of functions with arguments from API schemas.
-Elements are named by schema names,
-each function returns a named list.
+Returns a list of functions with arguments from API schemas. Elements are
+named by schema names, each function returns a named list.
 }
 

@@ -13,6 +13,18 @@
 #'
 #'   Check out \url{https://github.com/OAI/OpenAPI-Specification} for additional
 #'   information about Open API specification
+#' @examples
+#' \dontrun{
+#' # Read API description
+#' api <- get_api(api_url)
+#'
+#' # create operation and schema functions
+#' operations <- get_operations(api)
+#' schemas <- get_schemas(api)
+#'
+#' # call service
+#' operations$some_operation(x, y, schemas$some_structure(u, v, ...))
+#' }
 #'
 #' @section Support:
 #'

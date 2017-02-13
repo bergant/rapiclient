@@ -27,4 +27,18 @@ OpenAPI (formerly Swagger) specification.
 
   Please use \url{https://github.com/bergant/rapiclient/issues} for issues
 }
+\examples{
+\dontrun{
+# Read API description
+api <- get_api(api_url)
+
+# create operation and schema functions
+operations <- get_operations(api)
+schemas <- get_schemas(api)
+
+# call service
+operations$some_operation(x, y, schemas$some_structure(u, v, ...))
+}
+
+}
 

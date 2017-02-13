@@ -4,10 +4,15 @@ context("External API test")
 
 test_that("Reads external API operations", {
 
-  # execute this test from console with:
+  # This test will skip when not in interactive mode
+  # It reads api description from remote location.
+  #
+  # To run this test, use:
   #  devtools::test(filter = "*external*")
 
-  if(!interactive()) skip("Only in interactive mode")
+  if(!interactive()) {
+    skip("Run only in interactive mode")
+  }
 
   # parse api specification
   ext_api <- get_api("http://api.opentrials.net/v1/swagger.yaml")
@@ -23,9 +28,6 @@ test_that("Reads external API operations", {
   expect(all(
     vapply(operations, function(x) typeof(x) == "closure", logical(1))
   ), "Not all operations are functions")
-
-  #res <- operations$autocomplete(`in` = "condition")
-  #httr::http_status(res)
 
   # schemas
   schemas <- ext_api[["definitions"]]

@@ -4,7 +4,7 @@
 \alias{build_op_url}
 \title{Build operations url}
 \usage{
-build_op_url(scheme, host, base_path, op_def, par_values)
+build_op_url(api, scheme, host, base_path, op_def, par_values)
 }
 \arguments{
 \item{scheme}{http or https}
@@ -18,7 +18,10 @@ build_op_url(scheme, host, base_path, op_def, par_values)
 \item{par_values}{parameter values in a list}
 }
 \description{
-Build operations url for operation and parameter values
+Build operations operation url for specified parameter values
+}
+\seealso{
+\code{\link{get_operation_definitions}}
 }
 \keyword{internal}
 

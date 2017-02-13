@@ -21,39 +21,6 @@ print.rapi_api <- function(x, ...) {
 }
 
 
-print_schema <- function(api, x, name = NULL) {
-  properties <- x$properties
-  schema_refs <- c()
-  if(!is.null(name)) cat(name, "\n")
-  for(p_name in names(properties)) {
-    p <- properties[[p_name]]
-    type <- properties[[p_name]]$type
-    if(!is.null(p$`$ref`)) {
-      type <- gsub("^#/definitions/","",p$`$ref`)
-      schema_refs <- c(schema_refs, p$`$ref`)
-    }
-    if(type == "array" ) {
-      if(!is.null(properties[[p_name]]$items$type)) {
-
-        type <- paste0(type, "[", properties[[p_name]]$items$type, "]")
-      }
-      if(!is.null(properties[[p_name]]$items$`$ref`)) {
-        subtype <- gsub("^#/definitions/","", properties[[p_name]]$items$`$ref`)
-        type <- paste0(type, "[", subtype, "]")
-        schema_refs <- c(schema_refs, properties[[p_name]]$items$`$ref`)
-      }
-    }
-    cat("  ", p_name, " (", type, ")\n", sep = "" )
-  }
-  schema_refs <- unique(schema_refs)
-  schemas <- lapply(schema_refs, function(x) get_schema(api, x))
-  names(schemas) <- schema_refs
-  for(schema in names(schemas)) {
-    print_schema(api, schemas[[schema]], gsub("^#/definitions/","", schema))
-  }
-}
-
-
 #' Print Operation
 #'
 #' @param x Operation
@@ -68,6 +35,8 @@ print.rapi_operation <- function(x, ...) {
   }
 
   op_def <- attr(x, "definition")
+
+  # there is an api object in the environment of the operation function
   api <- get("api", parent.env(environment(fun = x)))
 
   cat(op_def$operationId, "\n")
@@ -76,39 +45,51 @@ print.rapi_operation <- function(x, ...) {
     cat("Description:\n  ", op_def$description, "\n")
   }
 
-  if(length(op_def$parameters)) {
+  cat("\n")
+  cat("Parameters:\n")
 
-    cat("\n")
-    cat("Parameters:\n")
-    for(i in seq_len(nrow(op_def$parameters))) {
-      if(!is.null(op_def$parameters[i,]$schema$`$ref`) &&
-         !is.na(  op_def$parameters[i,]$schema$`$ref`)) {
-        schema_name <-
-          gsub("^#/definitions/","", op_def$parameters[i,"schema"]$`$ref`)
-        print_schema(
-          api,
-          get_schema(api, op_def$parameters[i,"schema"]$`$ref`)
-        )
-      } else if(!is.null(op_def$parameters[i,]$schema$items$`$ref`)) {
-        schema_name <-
-          gsub("^#/definitions/","", op_def$parameters[i,"schema"]$items$`$ref`)
-        cat("Array of", schema_name, ":\n")
-        print_schema(
-          api,
-          get_schema(api, op_def$parameters[i,"schema"]$items$`$ref`)
-        )
-      } else {
-        pars <- op_def$parameters[i, ]
-        type <- pars$type
-        subtype <- pars$items$type
-        if(!is.null(subtype)) {
-          type <- paste0(type, "[", subtype, "]")
-        }
-        cat("  ", pars$name, " (", type, ")\n    ", pars$description, sep = "")
-      }
-      cat("\n")
+  for(p in op_def$parameters) {
+    type <- p$type
+    if(!is.null(p$`$ref`) ) {
+      type <- gsub("#/definitions/", "", p$`$ref`)
+    }
+    subtype <- p$items$type
+    if(!is.null(p$items$`$ref`)) {
+      subtype <- gsub("#/definitions/", "", p$items$`$ref`)
+    }
+    if(!is.null(subtype)) {
+      type <- paste0(type, "[", subtype, "]")
+    }
+    cat("  ", p$name, " (", type, ")\n", sep = "")
+    if(!is.null(p$description)) {
+      cat("    ", p$description, "\n", sep = "")
     }
   }
+  #op_def <- attr(op1$addPet, "definition")
+  schemas <- union(
+    unlist(lapply(op_def$parameters, function(x) x[["$ref"]])),
+    unlist(lapply(op_def$parameters, function(x) x$items[["$ref"]]))
+  )
+  schemas <- gsub("#/definitions/","", schemas)
+
+
+  ss <- lapply(schemas, function(s) {
+    get_schema_structure(api, api$definitions[[s]], name = s)
+  })
+
+  nodes <- unlist(lapply(ss, function(s) s$nodes), recursive = FALSE)
+  nodes <- nodes[!duplicated(names(nodes))]
+
+  for(n in names(nodes)) {
+    cat(n, "\n")
+    for(p in seq_len(nrow(nodes[[n]]))) {
+      cat("  ", nodes[[n]]$name[p], " (", nodes[[n]]$type[p], ")\n", sep = "")
+      if(nodes[[n]]$description[p]!="") {
+        cat("    ", nodes[[n]]$description[p], "\n")
+      }
+    }
+  }
+
 
 }
 

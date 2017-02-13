@@ -1,12 +1,38 @@
-get_schema <- function(api, ref) {
+get_schema <- function(api, ref, compose_allOf = FALSE) {
   if(!grepl("^#/definitions", ref )) {
     ref <- paste0("#/definitions/", ref)
   }
   ref_pos <- strsplit(ref, "/")[[1]]
   schema <- api[[ref_pos[[2]]]][[ref_pos[[3]]]]
+  if(is.null(schema)) {
+    ref_pos <- gsub(" ", "_", ref_pos)
+    schema <- api[[ref_pos[[2]]]][[ref_pos[[3]]]]
+  }
+
+
+  if(!is.null(schema$allOf) && compose_allOf) {
+    allOfProperties <- get_allOf(api, schema$allOf)
+    schema$properties <- append(schema$properties, allOfProperties)
+    if(is.null(schema$type) && length(schema$properties)) {
+      schema$type <- "object"
+    }
+  }
+
   attr(schema, "name") <- ref_pos[[3]]
   class(schema) <- c(.class_schema, class(schema))
   schema
+}
+
+get_allOf <- function(api, obj_allOf) {
+  properties <-
+    lapply(obj_allOf, function(obj) {
+      if(!is.null(obj$`$ref`)) {
+        get_schema(api, obj$`$ref`, compose_allOf = TRUE)$properties
+      } else {
+        obj$properties
+      }
+    })
+  Reduce(c, properties)
 }
 
 
@@ -31,11 +57,10 @@ get_schema_function <- function(schema) {
   f1
 }
 
-#' Get Schemas
+#' Get schemas
 #'
-#' Returns a list of functions with arguments from API schemas.
-#' Elements are named by schema names,
-#' each function returns a named list.
+#' Returns a list of functions with arguments from API schemas. Elements are
+#' named by schema names, each function returns a named list.
 #'
 #' @param api Api object
 #' @return A list of functions
@@ -44,10 +69,15 @@ get_schemas <- function(api) {
 
   function_list <-
     lapply(names(api$definitions), function(schema_name) {
-      schema <- get_schema(api, schema_name)
-      get_schema_function(schema)
+      schema <- get_schema(api, schema_name, compose_allOf = TRUE)
+      if(length(schema$properties)) {
+        get_schema_function(schema)
+      } else {
+        NULL
+      }
     })
   names(function_list) <- names(api$definitions)
+  function_list <- function_list[!vapply(function_list, is.null, logical(1))]
   function_list
 }
 

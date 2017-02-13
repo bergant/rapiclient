@@ -1,4 +1,4 @@
-#library(testthat)
+library(testthat)
 
 context("Petstore sample API operations")
 
@@ -12,18 +12,10 @@ test_that("Reads API operations", {
     expect_is(operation, "rapi_operation")
   }
   expect_length(operations, 20)
-  out_str <- capture.output(print(pet_api))
-  expect(length(out_str) > 10, "Sample API print < 10 lines")
+  expect_output(print(operations))
+  expect_output(print(pet_api))
 })
 
-test_that("Petstore sample API operations", {
-  petstore_spec <-
-    system.file("extdata/sample_specs/petstore.json", package = "rapiclient")
-  pet_api <- get_api(petstore_spec)
-  operations <- get_operations(pet_api)
-  out_str <- capture.output(print(operations))
-  expect(length(out_str) > 200, "Sample API operations print < 200 lines")
-})
 
 context("Petstore sample API schemas")
 
@@ -36,8 +28,7 @@ test_that("Reads API schemas", {
     expect_type(schema, "closure")
     expect_is(schema, "rapi_schema_function")
   }
-  out_str <- capture.output(print(schemas))
-  expect(length(out_str) > 10, "Sample API schemas print < 10 lines")
+  expect_output(print(schemas))
 })
 
 context("Petstore sample API schemas structure")
