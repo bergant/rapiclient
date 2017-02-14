@@ -23,8 +23,16 @@ a list of R functions.
 
 
 ## Installation
+Install the current released version from CRAN:
 
 ```{r eval=FALSE}
+install.packages("rapiclient")
+```
+
+Or get the current development version from github:
+
+```{r eval=FALSE}
+# install.packages("devtools")
 devtools::install_github("bergant/rapiclient")
 ```
 

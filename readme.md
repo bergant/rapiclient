@@ -16,9 +16,18 @@ a list of R functions.
 
 
 ## Installation
+Install the current released version from CRAN:
 
 
 ```r
+install.packages("rapiclient")
+```
+
+Or get the current development version from github:
+
+
+```r
+# install.packages("devtools")
 devtools::install_github("bergant/rapiclient")
 ```
 
@@ -175,7 +184,7 @@ httr::with_verbose({
  -> Accept: application/json
  -> 
  <- HTTP/1.1 200 OK
- <- Date: Thu, 09 Feb 2017 14:56:54 GMT
+ <- Date: Tue, 14 Feb 2017 09:15:55 GMT
  <- Access-Control-Allow-Origin: *
  <- Access-Control-Allow-Methods: GET, POST, DELETE, PUT
  <- Access-Control-Allow-Headers: Content-Type, api_key, Authorization
@@ -192,7 +201,7 @@ httr::with_verbose({
  -> Content-Length: 0
  -> 
  <- HTTP/1.1 200 OK
- <- Date: Thu, 09 Feb 2017 14:56:54 GMT
+ <- Date: Tue, 14 Feb 2017 09:15:56 GMT
  <- Access-Control-Allow-Origin: *
  <- Access-Control-Allow-Methods: GET, POST, DELETE, PUT
  <- Access-Control-Allow-Headers: Content-Type, api_key, Authorization
@@ -312,9 +321,9 @@ str(content, max.level = 1)
 #  $ status      : chr "OK"
 #  $ copyright   : chr "Copyright (c) 2017 The New York Times Company. All Rights Reserved."
 #  $ section     : chr "science"
-#  $ last_updated: chr "2017-02-09T09:53:18-05:00"
-#  $ num_results : int 27
-#  $ results     :List of 27
+#  $ last_updated: chr "2017-02-14T04:07:28-05:00"
+#  $ num_results : int 26
+#  $ results     :List of 26
 ```
 
 
