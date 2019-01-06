@@ -10,6 +10,7 @@
 #' Create API object from Swagger specification
 #'
 #' @param url Api url
+#' @param config httr::config() curl options.
 #' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #' @return API object
 #' @examples
@@ -20,7 +21,7 @@
 #' schemas <- get_schemas(api)
 #' }
 #' @export
-get_api <- function(url) {
+get_api <- function(url, config = NULL) {
   api <- jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
 
   # swagger element is required
@@ -60,6 +61,10 @@ get_api <- function(url) {
   if(is.null(api$paths)) {
     warning("There is no paths element in the API specification")
   }
+
+  if (!(is.null(config) || inherits(config, "request")))
+    stop("'config' must be NULL or an instance of httr::config()")
+  api$config <- config
 
   class(api) <- c(.class_api, class(api))
   api
@@ -225,6 +230,9 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       return(url)
     }
 
+    get_config <- function(x) {
+      api$config
+    }
 
     # function body
     if(op_def$action == "post") {
@@ -233,6 +241,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         request_json <- get_message_body(x)
         result <- httr::POST(
           url = get_url(x),
+          config = get_config(),
           body = request_json,
           httr::content_type("application/json"),
           httr::accept_json(),
@@ -246,6 +255,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         request_json <- get_message_body(x)
         result <- httr::PUT(
           url = get_url(x),
+          config = get_config(),
           body = request_json,
           httr::content_type("application/json"),
           httr::accept_json(),
@@ -258,6 +268,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         x <- eval(param_values)
         result <- httr::GET(
           url = get_url(x),
+          config = get_config(),
           httr::content_type("application/json"),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
@@ -269,6 +280,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         x <- eval(param_values)
         result <- httr::DELETE(
           url = get_url(x),
+          config = get_config(),
           httr::content_type("application/json"),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)

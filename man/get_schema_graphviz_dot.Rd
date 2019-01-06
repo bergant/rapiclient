@@ -4,8 +4,8 @@
 \alias{get_schema_graphviz_dot}
 \title{Get schema graphviz dot (experimental in this version)}
 \usage{
-get_schema_graphviz_dot(api, schema, schema_name = NULL, rankdir = "LR",
-  gv_attrs = "")
+get_schema_graphviz_dot(api, schema, schema_name = NULL,
+  rankdir = "LR", gv_attrs = "")
 }
 \arguments{
 \item{api}{Api object}
@@ -18,4 +18,3 @@ get_schema_graphviz_dot(api, schema, schema_name = NULL, rankdir = "LR",
 Create a graphviz presentation of schema structure (experimental)
 }
 \keyword{internal}
-

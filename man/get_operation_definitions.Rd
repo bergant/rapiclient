@@ -21,4 +21,3 @@ inside path. Operation name is set to `operationId` from each action.
 See also specification \url{http://swagger.io/specification/#operationObject}
 }
 \keyword{internal}
-

@@ -4,10 +4,12 @@
 \alias{get_api}
 \title{Get API}
 \usage{
-get_api(url)
+get_api(url, config = NULL)
 }
 \arguments{
 \item{url}{Api url}
+
+\item{config}{httr::config() curl options.}
 }
 \value{
 API object
@@ -26,4 +28,3 @@ schemas <- get_schemas(api)
 \seealso{
 See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 }
-
