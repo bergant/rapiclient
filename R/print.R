@@ -1,3 +1,13 @@
+#' Print Operation
+#'
+#' @param text character(1) to be formatted to the width of the user
+#'   screen, with additional arguments \code{...} passed to
+#'   \code{strwrap()}.
+#' @keywords internal
+print_wrap <- function(text, ...) {
+  paste(strwrap(text, ...), collapse="\n")
+}
+
 #' Print API object
 #'
 #' @param x API object
@@ -11,15 +21,15 @@ print.rapi_api <- function(x, ...) {
   cat("\n")
 
   cat("\n")
-  cat(x$info$description, "\n\n")
+  cat(print_wrap(x$info$description), "\n\n")
   op_defs <- get_operation_definitions(x)
 
   for(op_def in op_defs) {
-    cat(op_def$operationId, "\n  ", op_def$summary, "\n")
+    summary <- print_wrap(op_def$summary, indent = 4, exdent = 4)
+    cat(op_def$operationId, "\n", summary, "\n", sep="")
   }
 
 }
-
 
 #' Print Operation
 #'
@@ -42,7 +52,8 @@ print.rapi_operation <- function(x, ...) {
   cat(op_def$operationId, "\n")
   cat(op_def$summary, "\n")
   if(!is.null(op_def$description) && op_def$description != "") {
-    cat("Description:\n  ", op_def$description, "\n")
+    description <- print_wrap(op_def$description, indent = 2, exdent =2)
+    cat("Description:\n", description, "\n", sep="")
   }
 
   cat("\n")
@@ -62,7 +73,9 @@ print.rapi_operation <- function(x, ...) {
     }
     cat("  ", p$name, " (", type, ")\n", sep = "")
     if(!is.null(p$description)) {
-      cat("    ", p$description, "\n", sep = "")
+      description <-
+        print_wrap(p$description, indent = 4, exdent = 4)
+      cat(description, "\n", sep="")
     }
   }
   #op_def <- attr(op1$addPet, "definition")
@@ -85,7 +98,9 @@ print.rapi_operation <- function(x, ...) {
     for(p in seq_len(nrow(nodes[[n]]))) {
       cat("  ", nodes[[n]]$name[p], " (", nodes[[n]]$type[p], ")\n", sep = "")
       if(nodes[[n]]$description[p]!="") {
-        cat("    ", nodes[[n]]$description[p], "\n")
+        description <-
+          print_wrap(nodes[[n]]$description[[p]], indent = 4, exdent = 4)
+        cat(description, "\n", sep="")
       }
     }
   }
@@ -100,14 +115,11 @@ print.rapi_operation <- function(x, ...) {
 #' @export
 #' @keywords internal
 print.rapi_schema_function <- function(x, ...) {
-  cat(
-    "    ",
+  text <- paste0(
     attr(x, "schema_name"),
-    "(",
-    paste(names(formals(x)), collapse = ", "),
-    ")",
-    sep = ""
+    "(", paste(names(formals(x)), collapse=", "), ")"
   )
+  cat(print_wrap(text, indent = 2, exdent = 4), "\n", sep="")
 }
 
 
