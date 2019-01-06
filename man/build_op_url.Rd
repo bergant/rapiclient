@@ -24,4 +24,3 @@ Build operations operation url for specified parameter values
 \code{\link{get_operation_definitions}}
 }
 \keyword{internal}
-

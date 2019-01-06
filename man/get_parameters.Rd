@@ -16,4 +16,3 @@ Extract all parameters from parameters definition as a list
 In case of reference to schema, use the schema.
 }
 \keyword{internal}
-

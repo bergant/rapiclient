@@ -13,4 +13,3 @@ get_message_body(x)
 Transform a list to http request message body
 }
 \keyword{internal}
-

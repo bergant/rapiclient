@@ -49,6 +49,7 @@ sending a request.
   with httr response object as argument and pass it as \code{handle_response}
   argument to \code{get_operations} function.
 }
+
 \examples{
 \dontrun{
 # create operation and schema functions
@@ -64,4 +65,3 @@ operations <-
   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
 }
 }
-

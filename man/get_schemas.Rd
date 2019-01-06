@@ -16,4 +16,3 @@ A list of functions
 Returns a list of functions with arguments from API schemas. Elements are
 named by schema names, each function returns a named list.
 }
-

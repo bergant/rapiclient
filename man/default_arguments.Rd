@@ -3,8 +3,8 @@
 \name{default_arguments}
 \alias{default_arguments}
 \alias{set_default_args}
-\alias{set_default_args_call}
 \alias{set_default_args_list}
+\alias{set_default_args_call}
 \title{Set default arguments}
 \usage{
 set_default_args(f, ...)
@@ -30,4 +30,3 @@ Use this functions to simplify operation and schema functions with default
 arguments
 }
 \keyword{internal}
-
