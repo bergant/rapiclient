@@ -15,4 +15,3 @@
 Print API object
 }
 \keyword{internal}
-

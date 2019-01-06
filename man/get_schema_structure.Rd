@@ -19,4 +19,3 @@ represented as data frames with schema properties and edges are relations
 between nested schemas
 }
 \keyword{internal}
-

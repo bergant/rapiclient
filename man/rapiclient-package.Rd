@@ -2,8 +2,8 @@
 % Please edit documentation in R/rapiclient.R
 \docType{package}
 \name{rapiclient-package}
-\alias{rapiclient}
 \alias{rapiclient-package}
+\alias{rapiclient}
 \title{rapiclient: Open API (Swagger) Client}
 \description{
 Create R functions directly from
@@ -27,6 +27,7 @@ OpenAPI (formerly Swagger) specification.
 
   Please use \url{https://github.com/bergant/rapiclient/issues} for issues
 }
+
 \examples{
 \dontrun{
 # Read API description
@@ -41,4 +42,3 @@ operations$some_operation(x, y, schemas$some_structure(u, v, ...))
 }
 
 }
-
