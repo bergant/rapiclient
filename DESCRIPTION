@@ -1,7 +1,7 @@
 Package: rapiclient
 Type: Package
 Title: Dynamic OpenAPI/Swagger Client
-Version: 0.1.2
+Version: 0.1.2.0001
 Authors@R: person("Darko", "Bergant", email = "darko.bergant@gmail.com",
                   role = c("aut", "cre"))
 URL: https://github.com/bergant/rapiclient
