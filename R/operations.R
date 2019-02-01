@@ -238,7 +238,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     if(op_def$action == "post") {
       tmp_fun <- function() {
         x <- eval(param_values)
-        request_json <- get_message_body(x)
+        request_json <- get_message_body(op_def, x)
         result <- httr::POST(
           url = get_url(x),
           config = get_config(),
@@ -252,7 +252,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     } else if(op_def$action == "put") {
       tmp_fun <- function() {
         x <- eval(param_values)
-        request_json <- get_message_body(x)
+        request_json <- get_message_body(op_def, x)
         result <- httr::PUT(
           url = get_url(x),
           config = get_config(),
@@ -310,7 +310,15 @@ get_operations <- function(api, .headers = NULL, path = NULL,
 #'
 #' @param x A list
 #' @keywords internal
-get_message_body <- function(x) {
+get_message_body <- function(op_def, x) {
+  parameters <- op_def$parameters
+  parameter_idx <- vapply(parameters, function(parameter) {
+      identical(parameter[["in"]], "body")
+  }, logical(1))
+  parameter_name <- parameters[[which(parameter_idx)]][["name"]]
+  x <- x[ names(x) %in% parameter_name ]
+  if (length(x))
+    x <- x[[1]]
   json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
 
   if(getOption("rapiclient.log_request", default = FALSE)) {
