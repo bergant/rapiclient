@@ -4,7 +4,7 @@
 \alias{get_message_body}
 \title{Message body}
 \usage{
-get_message_body(x)
+get_message_body(op_def, x)
 }
 \arguments{
 \item{x}{A list}
