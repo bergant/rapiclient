@@ -9,10 +9,13 @@
 #'
 #' Create API object from Swagger specification
 #'
-#' @param url Api url
+#' @param url Api url (can be json or yaml format)
 #' @param config httr::config() curl options.
 #' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #' @return API object
+#'
+#' @importFrom yaml yaml.load_file
+#'
 #' @examples
 #' \dontrun{
 #' # create operation and schema functions
@@ -22,7 +25,11 @@
 #' }
 #' @export
 get_api <- function(url, config = NULL) {
-  api <- jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
+  api = NULL
+  tryCatch((api = jsonlite::fromJSON(url, simplifyDataFrame = FALSE)),
+           error=function(x) {})
+  tryCatch((api = yaml::yaml.load_file(url(url))),
+           error = function(x) {print("URL does not appear to be JSON or YAML.")})
 
   # swagger element is required
   if(is.null(api$swagger)) {
