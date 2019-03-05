@@ -35,7 +35,7 @@ get_api <- function(url, config = NULL) {
   # If the host is not included, the host serving the documentation is to be
   # used (including the port).
   if(is.null(api$host)) {
-    host <- httr::parse_url(url)$host
+    host <- httr::parse_url(url)$hostname
     if(!is.null(host)) {
       port <- httr::parse_url(url)$port
       if(!is.null(port)) {
