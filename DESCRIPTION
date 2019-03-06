@@ -14,7 +14,8 @@ Depends:
 License: MIT + file LICENSE
 Imports:
   jsonlite,
-  httr
+  httr,
+  yaml
 LazyData: TRUE
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Suggests: testthat
