@@ -5,3 +5,7 @@ r:
   #- oldrel
   - release
   - devel
+env:
+  global:
+  # currently, there is a warinng on R-devel check (getting 403 on http://worldclockapi.com/api/json/utc/now)
+  - _R_CHECK_FUTURE_FILE_TIMESTAMPS_=false
