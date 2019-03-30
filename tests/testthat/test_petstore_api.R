@@ -5,7 +5,7 @@ context("Petstore sample API operations")
 test_that("Reads API operations", {
   petstore_spec <-
     system.file("extdata/sample_specs", "petstore.json", package = "rapiclient")
-  pet_api <- get_api(petstore_spec)
+  expect_silent(pet_api <- get_api(petstore_spec))
   operations <- get_operations(pet_api)
   for(operation in operations) {
     expect_type(operation, "closure")
@@ -16,6 +16,10 @@ test_that("Reads API operations", {
   expect_output(print(pet_api))
 })
 
+test_that("Fails to read non-API file", {
+    spec <- tempfile()
+    expect_error(get_api(spec), "'url' does not appear to be JSON or YAML")
+})
 
 context("Petstore sample API schemas")
 
