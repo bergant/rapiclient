@@ -26,13 +26,18 @@
 #' @export
 get_api <- function(url, config = NULL) {
   api = NULL
-  tryCatch((api = jsonlite::fromJSON(url, simplifyDataFrame = FALSE)),
-           error=function(x) {})
-  tryCatch((api = yaml::yaml.load_file(url(url))),
-           error = function(x) {print("URL does not appear to be JSON or YAML.")})
+  api <- tryCatch({
+      jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
+  }, error=function(x) NULL)
+  if (is.null(api))
+      api <- tryCatch({
+          yaml::yaml.load_file(url(url))
+      }, error = function(x) NULL)
+  if (is.null(api))
+      stop("'url' does not appear to be JSON or YAML")
 
   # swagger element is required
-  if(is.null(api$swagger)) {
+  if (is.null(api$swagger)) {
     warning("Missing Swagger Specification version")
   }
   # Info element is required

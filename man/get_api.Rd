@@ -7,7 +7,7 @@
 get_api(url, config = NULL)
 }
 \arguments{
-\item{url}{Api url}
+\item{url}{Api url (can be json or yaml format)}
 
 \item{config}{httr::config() curl options.}
 }
