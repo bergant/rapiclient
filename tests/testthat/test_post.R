@@ -14,6 +14,33 @@ test_that('only "in": "body" parameter is found', {
     expect_identical(expect, get_message_body(op_def, x))
     x <- list(param0 = "bad", param1 = "ok")
     expect_identical(expect, get_message_body(op_def, x))
+
+})
+
+test_that('several "in": "body" parameters work', {
+    op_def <- list(
+        parameters = list(
+            list(`in` = "body", name = "param1"),
+            list(`in` = "body", name = "param2")
+        )
+    )
+
+    expect <- structure("{}", class = "json")
+    x <- setNames(list(), character())
+    expect_identical(expect, get_message_body(op_def, x))
+    x <- list(param0 = "bad")
+    expect_identical(expect, get_message_body(op_def, x))
+
+    expect <- structure('"ok"', class = "json")
+    x <- list(param1 = "ok")
+    expect_identical(expect, get_message_body(op_def, x))
+    x <- list(param2 = "ok")
+    expect_identical(expect, get_message_body(op_def, x))
+    x <- list(param0 = "bad", param2 = "ok")
+    expect_identical(expect, get_message_body(op_def, x))
+
+    expect <- x <- list(param1 = "ok1", param2 = "ok2")
+    expect_identical(expect, jsonlite::fromJSON(get_message_body(op_def, x)))
 })
 
 test_that("unboxing works", {

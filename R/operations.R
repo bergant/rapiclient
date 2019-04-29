@@ -324,12 +324,14 @@ get_operations <- function(api, .headers = NULL, path = NULL,
 #' @keywords internal
 get_message_body <- function(op_def, x) {
   parameters <- op_def$parameters
-  parameter_idx <- vapply(parameters, function(parameter) {
-      identical(parameter[["in"]], "body")
-  }, logical(1))
-  parameter_name <- parameters[[which(parameter_idx)]][["name"]]
-  x <- x[ names(x) %in% parameter_name ]
-  if (length(x))
+  parameter_names <- vapply(parameters, function(parameter) {
+      if (identical(parameter[["in"]], "body")) {
+          parameter[["name"]]
+      } else NA_character_
+  }, character(1))
+  parameter_names <- parameter_names[!is.na(parameter_names)]
+  x <- x[ names(x) %in% parameter_names ]
+  if (length(x) == 1L)
     x <- x[[1]]
   json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
 
