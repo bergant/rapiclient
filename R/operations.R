@@ -30,8 +30,15 @@ get_api <- function(url, config = NULL) {
       jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
   }, error=function(x) NULL)
   if (is.null(api))
-      api <- tryCatch({
-          yaml::yaml.load_file(url(url))
+      tryCatch({
+          if (startsWith(url, "http")) {
+              url0 <- url(url)
+              open(url0)
+              api <- yaml::yaml.load_file(url0)
+              close(url0)
+          } else {
+              yaml::yaml.load_file(url)
+          }
       }, error = function(x) NULL)
   if (is.null(api))
       stop("'url' does not appear to be JSON or YAML")
