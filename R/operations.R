@@ -44,7 +44,7 @@ get_api <- function(url, config = NULL) {
       stop("'url' does not appear to be JSON or YAML")
 
   # swagger element is required
-  if (is.null(api$swagger)) {
+  if(is.null(api$swagger)) {
     warning("Missing Swagger Specification version")
   }
   # Info element is required
