@@ -59,3 +59,18 @@ test_that("Reads external API operations", {
     "Missing 'digraph' keyword in some dot string"
   )
 })
+
+test_that("Reads remote and local yaml", {
+    yaml <- paste0(
+        "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/",
+        "examples/v3.0/petstore.yaml"
+    )
+    ext_api <- get_api(yaml)
+    yaml_fl <- tempfile(fileext=".yaml")
+    download.file(yaml, yaml_fl)
+    local_api <- get_api(yaml_fl)
+    expect_identical(
+        ## ext_api has host, schemes
+        ext_api[names(local_api)], local_api[]
+    )
+})

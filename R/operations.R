@@ -37,7 +37,7 @@ get_api <- function(url, config = NULL) {
               api <- yaml::yaml.load_file(url0)
               close(url0)
           } else {
-              yaml::yaml.load_file(url)
+              api <- yaml::yaml.load_file(url)
           }
       }, error = function(x) NULL)
   if (is.null(api))
