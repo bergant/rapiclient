@@ -110,7 +110,7 @@ get_operation_definitions <- function(api, path = NULL) {
     path_names <- path_names[grep(path, path_names)]
   }
   for(path_name in path_names) {
-    action_types <- c("post", "get", "delete", "put")
+    action_types <- c("post", "get", "head", "delete", "put")
     # parameters may be defined on the path level
 
     for(action in intersect(names(api$paths[[path_name]]), action_types)) {
@@ -286,6 +286,18 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       tmp_fun <- function() {
         x <- eval(param_values)
         result <- httr::GET(
+          url = get_url(x),
+          config = get_config(),
+          httr::content_type("application/json"),
+          httr::accept_json(),
+          httr::add_headers(.headers = .headers)
+        )
+        handle_response(result)
+      }
+    } else if(op_def$action == "head") {
+      tmp_fun <- function() {
+        x <- eval(param_values)
+        result <- httr::HEAD(
           url = get_url(x),
           config = get_config(),
           httr::content_type("application/json"),
