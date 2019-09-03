@@ -110,7 +110,8 @@ get_operation_definitions <- function(api, path = NULL) {
     path_names <- path_names[grep(path, path_names)]
   }
   for(path_name in path_names) {
-    action_types <- c("post", "get", "head", "delete", "put")
+    action_types <-
+      c("post", "patch", "get", "head", "delete", "put")
     # parameters may be defined on the path level
 
     for(action in intersect(names(api$paths[[path_name]]), action_types)) {
@@ -259,6 +260,20 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         x <- eval(param_values)
         request_json <- get_message_body(op_def, x)
         result <- httr::POST(
+          url = get_url(x),
+          config = get_config(),
+          body = request_json,
+          httr::content_type("application/json"),
+          httr::accept_json(),
+          httr::add_headers(.headers = .headers)
+        )
+        handle_response(result)
+      }
+    } else if(op_def$action == "patch") {
+      tmp_fun <- function() {
+        x <- eval(param_values)
+        request_json <- get_message_body(op_def, x)
+        result <- httr::PATCH(
           url = get_url(x),
           config = get_config(),
           body = request_json,
