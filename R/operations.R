@@ -170,7 +170,7 @@ get_operation_definitions <- function(api, path = NULL) {
       ret <- c(ret, stats::setNames(list(operation), operation$operationId))
     }
   }
-  setNames(ret, trimws(names(ret)))
+  stats::setNames(ret, trimws(names(ret)))
 }
 
 
