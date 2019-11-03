@@ -259,11 +259,14 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       tmp_fun <- function() {
         x <- eval(param_values)
         request_json <- get_message_body(op_def, x)
+        consumes <- ifelse(
+            is.null(op_def$consumes), "application/json", op_def$consumes
+        )
         result <- httr::POST(
           url = get_url(x),
           config = get_config(),
           body = request_json,
-          httr::content_type("application/json"),
+          httr::content_type(consumes),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
@@ -273,11 +276,14 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       tmp_fun <- function() {
         x <- eval(param_values)
         request_json <- get_message_body(op_def, x)
+        consumes <- ifelse(
+            is.null(op_def$consumes), "application/json", op_def$consumes
+        )
         result <- httr::PATCH(
           url = get_url(x),
           config = get_config(),
           body = request_json,
-          httr::content_type("application/json"),
+          httr::content_type(consumes),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
@@ -287,11 +293,14 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       tmp_fun <- function() {
         x <- eval(param_values)
         request_json <- get_message_body(op_def, x)
+        consumes <- ifelse(
+            is.null(op_def$consumes), "application/json", op_def$consumes
+        )
         result <- httr::PUT(
           url = get_url(x),
           config = get_config(),
           body = request_json,
-          httr::content_type("application/json"),
+          httr::content_type(consumes),
           httr::accept_json(),
           httr::add_headers(.headers = .headers)
         )
@@ -352,25 +361,45 @@ get_operations <- function(api, .headers = NULL, path = NULL,
 
 #' Message body
 #'
-#' Transform a list to http request message body
+#' Transform a list of operation arguments to an http request message
+#' body. This method searches for parameters with swagger / openAPI
+#' specification `in: body` or `in: formData`. `body` parameters are
+#' expected to be R vectors or lists, and are transformed to JSON
+#' using `jsonlite::toJSON()`. `formData` parameters are treated as
+#' is, so must be specified (e.g., using `httr::upload_file()`) by the
+#' caller. Interpretation of `formData` parameters require that the
+#' `op_def` includes `consumes: multipart/form-data`.
 #'
-#' @param x A list
+#' @param op_def A list representation of the swagger / openAPI
+#'     description of the operation.
+#'
+#' @param x A list representation of the operation arguments provided
+#'     by the user.
+#'
+#' @return A JSON character representation (for `body`) or list of
+#'     objects (for `formData`) representing the parameters `x`.
+#'
 #' @keywords internal
 get_message_body <- function(op_def, x) {
+  formData <- identical(op_def$consumes, "multipart/form-data")
   parameters <- op_def$parameters
   parameter_names <- vapply(parameters, function(parameter) {
-      if (identical(parameter[["in"]], "body")) {
-          parameter[["name"]]
-      } else NA_character_
+    if (parameter[["in"]] %in% c("body", "formData")) {
+      parameter[["name"]]
+    } else NA_character_
   }, character(1))
   parameter_names <- parameter_names[!is.na(parameter_names)]
   x <- x[ names(x) %in% parameter_names ]
-  if (length(x) == 1L)
-    x <- x[[1]]
-  json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
+  if (formData) {
+    json <- x
+  } else {
+    if (length(x) == 1L)
+      x <- x[[1]]
+    json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
+  }
 
   if(getOption("rapiclient.log_request", default = FALSE)) {
-    cat(json, "\n",
+    cat(if (formData) "formData" else json, "\n",
         file = file.path(
           getOption("rapiclient.log_request_path", "rapiclient_log.json")
         ), append = FALSE
