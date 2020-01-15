@@ -61,6 +61,10 @@ test_that("Reads external API operations", {
 })
 
 test_that("Reads remote and local yaml", {
+    if(!interactive()) {
+        skip("Run only in interactive mode")
+    }
+
     yaml <- paste0(
         "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/",
         "examples/v3.0/petstore.yaml"
