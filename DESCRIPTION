@@ -10,14 +10,12 @@ Description: Access services specified in OpenAPI (formerly Swagger) format.
   It is not a code generator. Client is generated dynamically as a list of R 
   functions.
 Depends:
-  R (>= 3.3.0)
+    R (>= 3.3)
 License: MIT + file LICENSE
 Imports:
   jsonlite,
   httr,
   yaml
-Suggests:
-  testthat,
-  RCurl
 LazyData: TRUE
 RoxygenNote: 6.1.1
+Suggests: testthat

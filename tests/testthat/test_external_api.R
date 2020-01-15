@@ -1,3 +1,5 @@
+#library(testthat)
+
 context("External API test")
 
 test_that("Reads external API operations", {
@@ -58,7 +60,7 @@ test_that("Reads external API operations", {
   )
 })
 
-test_that("Reads a remote and local yaml", {
+test_that("Reads remote and local yaml", {
     yaml_fl <- system.file("extdata/sample_specs/petstore.yaml",
         package = "rapiclient", mustWork = TRUE)
     local_api <- get_api(yaml_fl)
@@ -67,14 +69,12 @@ test_that("Reads a remote and local yaml", {
         inherits(local_api, "rapi_api")
     )
 
-    if(!interactive()) {
+    if (!interactive()) {
       skip("Run only in interactive mode")
     }
-    yaml <- paste0("https://raw.githubusercontent.com/OAI/",
-        "OpenAPI-Specification/master/examples/",
-        "v2.0/yaml/petstore.yaml")
-    expect_true(
-        RCurl::url.exists(yaml)
+    yaml <- paste0(
+        "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/",
+        "examples/v2.0/yaml/petstore.yaml"
     )
     ext_api <- get_api(yaml)
     yaml_fl <- tempfile(fileext=".yaml")
