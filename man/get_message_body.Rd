@@ -7,9 +7,24 @@
 get_message_body(op_def, x)
 }
 \arguments{
-\item{x}{A list}
+\item{op_def}{A list representation of the swagger / openAPI
+description of the operation.}
+
+\item{x}{A list representation of the operation arguments provided
+by the user.}
+}
+\value{
+A JSON character representation (for `body`) or list of
+    objects (for `formData`) representing the parameters `x`.
 }
 \description{
-Transform a list to http request message body
+Transform a list of operation arguments to an http request message
+body. This method searches for parameters with swagger / openAPI
+specification `in: body` or `in: formData`. `body` parameters are
+expected to be R vectors or lists, and are transformed to JSON
+using `jsonlite::toJSON()`. `formData` parameters are treated as
+is, so must be specified (e.g., using `httr::upload_file()`) by the
+caller. Interpretation of `formData` parameters require that the
+`op_def` includes `consumes: multipart/form-data`.
 }
 \keyword{internal}

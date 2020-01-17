@@ -59,3 +59,29 @@ test_that("Reads external API operations", {
     "Missing 'digraph' keyword in some dot string"
   )
 })
+
+test_that("Reads remote and local yaml", {
+    yaml_fl <- system.file("extdata/sample_specs/petstore.yaml",
+        package = "rapiclient", mustWork = TRUE)
+    local_api <- get_api(yaml_fl)
+
+    expect_true(
+        inherits(local_api, "rapi_api")
+    )
+
+    if (!interactive()) {
+      skip("Run only in interactive mode")
+    }
+    yaml <- paste0(
+        "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/",
+        "examples/v2.0/yaml/petstore.yaml"
+    )
+    ext_api <- get_api(yaml)
+    yaml_fl <- tempfile(fileext=".yaml")
+    download.file(yaml, yaml_fl)
+    local_api <- get_api(yaml_fl)
+    expect_identical(
+        ## ext_api has host, schemes
+        ext_api[names(local_api)], local_api[]
+    )
+})

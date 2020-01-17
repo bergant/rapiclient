@@ -68,3 +68,19 @@ test_that("unboxing works", {
     x <- list(param1 = list("ok", "ok"))
     expect_identical(expect, get_message_body(op_def, x))
 })
+
+test_that("formData works", {
+    op_def <- list(
+        consumes = "multipart/form-data",
+        parameters = list( list(`in` = "formData", name = "param1") )
+    )
+
+    expect_identical(list(), get_message_body(op_def, list()))
+
+    x <- list(param1 = "foo")
+    expect_identical(x, get_message_body(op_def, x))
+
+    file.create(fl <- tempfile())
+    x = list(param1 = httr::upload_file(fl))
+    expect_identical(x, get_message_body(op_def, x))
+})
