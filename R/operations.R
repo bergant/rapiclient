@@ -86,9 +86,15 @@ get_api <- function(url, config = NULL) {
     warning("There is no paths element in the API specification")
   }
 
-  if (!(is.null(config) || inherits(config, "request")))
-    stop("'config' must be NULL or an instance of httr::config()")
-  api$config <- config
+  if (is.null(config)) {
+    api$config <- NULL
+  } else if (inherits(config, "request")) {
+    api$config <- function() { config }
+  } else if (is.function(config)) {
+    api$config <- config
+  } else {
+    stop("'config' must be NULL, an instance of httr::config() or a function returning")
+  }
 
   class(api) <- c(.class_api, class(api))
   api
@@ -256,7 +262,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     }
 
     get_config <- function() {
-      api$config
+      api$config()
     }
 
     get_accept <- function(op_def) {
