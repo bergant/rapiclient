@@ -239,6 +239,10 @@ get_operation_definitions <- function(api, path = NULL) {
 get_operations <- function(api, .headers = NULL, path = NULL,
                            handle_response = identity) {
 
+  if (!is.function(.headers)) {
+    .headers <- function() { .headers }
+  }
+
   operation_defs <- get_operation_definitions(api, path)
 
   param_values <- expression({
@@ -287,7 +291,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers)
+          httr::add_headers(.headers = .headers())
         )
         handle_response(result)
       }
@@ -304,7 +308,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers)
+          httr::add_headers(.headers = .headers())
         )
         handle_response(result)
       }
@@ -321,7 +325,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers)
+          httr::add_headers(.headers = .headers())
         )
         handle_response(result)
       }
@@ -333,7 +337,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           config = get_config(),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers)
+          httr::add_headers(.headers = .headers())
         )
         handle_response(result)
       }
@@ -345,7 +349,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           config = get_config(),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers)
+          httr::add_headers(.headers = .headers())
         )
         handle_response(result)
       }
@@ -357,7 +361,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           config = get_config(),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers)
+          httr::add_headers(.headers = .headers())
         )
         handle_response(result)
       }
