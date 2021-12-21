@@ -1,5 +1,5 @@
 get_schema <- function(api, ref, compose_allOf = FALSE) {
-  if(!grepl("^#/definitions", ref )) {
+  if(!grepl("^#/definitions", ref ) && !grepl("^#/components", ref )) {
     ref <- paste0("#/definitions/", ref)
   }
   ref_pos <- strsplit(ref, "/")[[1]]

@@ -26,6 +26,7 @@
 #' @export
 get_api <- function(url, config = NULL) {
   api = NULL
+  #browser()
   api <- tryCatch({
       jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
   }, error=function(x) NULL)
@@ -44,8 +45,12 @@ get_api <- function(url, config = NULL) {
       stop("'url' does not appear to be JSON or YAML")
 
   # swagger element is required
-  if (is.null(api$swagger)) {
-    warning("Missing Swagger Specification version")
+  if (!is.null(api$swagger)) {
+    message("Swagger Specification version ", api$swagger)
+  } else if (!is.null(api$openapi)) {
+    message("Openapi Specification version ", api$openapi)
+  } else {
+    warning("Missing Swagger and OpenApi Specification version")
   }
   # Info element is required
   if(is.null(api$info)) {
