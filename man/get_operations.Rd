@@ -4,14 +4,14 @@
 \alias{get_operations}
 \title{Get operations}
 \usage{
-get_operations(api, .headers = NULL, path = NULL,
-  handle_response = identity)
+get_operations(api, .headers = NULL, path = NULL, handle_response = identity)
 }
 \arguments{
 \item{api}{API object (see \code{\link{get_api}})}
 
 \item{.headers}{Optional headers passed to httr functions. See
-\code{\link[httr]{add_headers}} documentation}
+\code{\link[httr]{add_headers}} documentation. Can be provided either
+as a vector of named headers or a callback function}
 
 \item{path}{(optional) filter by path from API specification}
 

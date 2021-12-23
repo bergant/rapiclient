@@ -10,7 +10,8 @@
 #' Create API object from Swagger specification
 #'
 #' @param url Api url (can be json or yaml format)
-#' @param config httr::config() curl options.
+#' @param config httr::config() curl options, provided either as an object or a
+#'   callback function
 #' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #' @return API object
 #'
@@ -20,6 +21,19 @@
 #' \dontrun{
 #' # create operation and schema functions
 #' api <- get_api(api_url)
+#' operations <- get_operations(api)
+#' schemas <- get_schemas(api)
+#'
+#' # create operations with custom config callback
+#' config <- function(op_def) {
+#'    if (op_def$operationId == "createUser") {
+#'       httr::config(verbose = TRUE)
+#'    } else {
+#'       httr::config()
+#'    }
+#' }
+#'
+#' api <- get_api(api_url, config)
 #' operations <- get_operations(api)
 #' schemas <- get_schemas(api)
 #' }
@@ -46,9 +60,11 @@ get_api <- function(url, config = NULL) {
 
   # swagger element is required
   if (!is.null(api$swagger)) {
-    message("Swagger Specification version ", api$swagger)
+    # ok - nothing to do
+    #message("Swagger Specification version ", api$swagger)
   } else if (!is.null(api$openapi)) {
-    message("Openapi Specification version ", api$openapi)
+    # ok - nothing to do
+    #message("Openapi Specification version ", api$openapi)
   } else {
     warning("Missing Swagger and OpenApi Specification version")
   }
@@ -89,7 +105,7 @@ get_api <- function(url, config = NULL) {
   if (is.null(config)) {
     api$config <- NULL
   } else if (inherits(config, "request")) {
-    api$config <- function() { config }
+    api$config <- function(op_def) { config }
   } else if (is.function(config)) {
     api$config <- config
   } else {
@@ -216,7 +232,8 @@ get_operation_definitions <- function(api, path = NULL) {
 #'
 #' @param api API object (see \code{\link{get_api}})
 #' @param .headers Optional headers passed to httr functions. See
-#'   \code{\link[httr]{add_headers}} documentation
+#'   \code{\link[httr]{add_headers}} documentation. Can be provided either
+#'   as a vector of named headers or a callback function
 #' @param path (optional) filter by path from API specification
 #' @param handle_response (optional) A function with a single argument: httr
 #'   response
@@ -240,7 +257,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
                            handle_response = identity) {
 
   if (!is.function(.headers)) {
-    .headers <- function() { .headers }
+    .headers <- function(op_def) { .headers }
   }
 
   operation_defs <- get_operation_definitions(api, path)
@@ -287,11 +304,11 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         )
         result <- httr::POST(
           url = get_url(x),
-          config = get_config(),
+          config = get_config(op_def),
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers())
+          httr::add_headers(.headers = .headers(op_def))
         )
         handle_response(result)
       }
@@ -304,11 +321,11 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         )
         result <- httr::PATCH(
           url = get_url(x),
-          config = get_config(),
+          config = get_config(op_def),
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers())
+          httr::add_headers(.headers = .headers(op_def))
         )
         handle_response(result)
       }
@@ -321,11 +338,11 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         )
         result <- httr::PUT(
           url = get_url(x),
-          config = get_config(),
+          config = get_config(op_def),
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers())
+          httr::add_headers(.headers = .headers(op_def))
         )
         handle_response(result)
       }
@@ -334,10 +351,10 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         x <- eval(param_values)
         result <- httr::GET(
           url = get_url(x),
-          config = get_config(),
+          config = get_config(op_def),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers())
+          httr::add_headers(.headers = .headers(op_def))
         )
         handle_response(result)
       }
@@ -346,10 +363,10 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         x <- eval(param_values)
         result <- httr::HEAD(
           url = get_url(x),
-          config = get_config(),
+          config = get_config(op_def),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers())
+          httr::add_headers(.headers = .headers(op_def))
         )
         handle_response(result)
       }
@@ -358,10 +375,10 @@ get_operations <- function(api, .headers = NULL, path = NULL,
         x <- eval(param_values)
         result <- httr::DELETE(
           url = get_url(x),
-          config = get_config(),
+          config = get_config(op_def),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers())
+          httr::add_headers(.headers = .headers(op_def))
         )
         handle_response(result)
       }
