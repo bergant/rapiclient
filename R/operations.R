@@ -282,7 +282,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
       return(url)
     }
 
-    get_config <- function() {
+    get_config <- function(op_def) {
       api$config()
     }
 
