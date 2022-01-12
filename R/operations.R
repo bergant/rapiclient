@@ -123,7 +123,10 @@ get_operation_definitions <- function(api, path = NULL) {
 
       # parameters can be defined on path level and overridden on operation
       # level
-      if(is.null(operation$parameters)) {
+      # 
+      # Note that parameters is often a list() rather than NULL, so deal
+      # that situation as well.
+      if(is.null(operation$parameters) || length(operation$parameters)==0) {
         operation$parameters <- api$paths[[path_name]]$parameters
       }
 
