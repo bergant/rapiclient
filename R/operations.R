@@ -60,11 +60,9 @@ get_api <- function(url, config = NULL) {
 
   # swagger element is required
   if (!is.null(api$swagger)) {
-    # ok - nothing to do
-    #message("Swagger Specification version ", api$swagger)
+    api$mode <- "swagger"
   } else if (!is.null(api$openapi)) {
-    # ok - nothing to do
-    #message("Openapi Specification version ", api$openapi)
+    api$mode <- "openapi"
   } else {
     warning("Missing Swagger and OpenApi Specification version")
   }
@@ -72,38 +70,42 @@ get_api <- function(url, config = NULL) {
   if(is.null(api$info)) {
     warning("Missing Specification Info")
   }
-  # If the host is not included, the host serving the documentation is to be
-  # used (including the port).
-  if(is.null(api$host)) {
-    host <- httr::parse_url(url)$hostname
-    if(!is.null(host)) {
-      port <- httr::parse_url(url)$port
-      if(!is.null(port)) {
-        host <- paste0(host, ":", port)
+
+  if (api$mode == "swagger") {
+    # If the host is not included, the host serving the documentation is to be
+    # used (including the port).
+    if(is.null(api$host)) {
+      host <- httr::parse_url(url)$hostname
+      if(!is.null(host)) {
+        port <- httr::parse_url(url)$port
+        if(!is.null(port)) {
+          host <- paste0(host, ":", port)
+        }
+        api$host <- host
       }
-      api$host <- host
+    }
+
+    # If basepath is not included, the API is served directly under the host
+    if(is.null(api$basePath)) {
+      api$basePath <- ""
+    }
+
+    # remove the trailing "/" from base path
+    api$basePath <- gsub("/$", "", api$basePath)
+
+    # If the schemes element  is not included, the default scheme to be used is
+    # the one used to access the Swagger definition itself.
+    if(is.null(api$schemes)) {
+      api$schemes <- httr::parse_url(url)$scheme
     }
   }
 
-  # If basepath is not included, the API is served directly under the host
-  if(is.null(api$basePath)) {
-    api$basePath <- ""
-  }
-
-  # remove the trailing "/" from base path
-  api$basePath <- gsub("/$", "", api$basePath)
-
-  # If the schemes element  is not included, the default scheme to be used is
-  # the one used to access the Swagger definition itself.
-  if(is.null(api$schemes)) {
-    api$schemes <- httr::parse_url(url)$scheme
-  }
   if(is.null(api$paths)) {
     warning("There is no paths element in the API specification")
   }
 
   if (is.null(config)) {
-    api$config <- NULL
+    api$config <- function(op_def) { NULL }
   } else if (inherits(config, "request")) {
     api$config <- function(op_def) { config }
   } else if (is.function(config)) {
@@ -256,8 +258,10 @@ get_operation_definitions <- function(api, path = NULL) {
 get_operations <- function(api, .headers = NULL, path = NULL,
                            handle_response = identity) {
 
-  if (!is.function(.headers)) {
-    .headers <- function(op_def) { .headers }
+  if (is.function(.headers)) {
+    header_function <- .headers
+  } else {
+    header_function <- function(op_def) { .headers }
   }
 
   operation_defs <- get_operation_definitions(api, path)
@@ -278,7 +282,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     # url
     get_url <- function(x) {
       url <-
-        build_op_url(api, api$schemes[1], api$host, api$basePath, op_def, x)
+        build_op_url(api, op_def, x)
       return(url)
     }
 
@@ -308,7 +312,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers(op_def))
+          httr::add_headers(.headers = header_function(op_def))
         )
         handle_response(result)
       }
@@ -325,7 +329,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers(op_def))
+          httr::add_headers(.headers = header_function(op_def))
         )
         handle_response(result)
       }
@@ -342,7 +346,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           body = request_json,
           httr::content_type(consumes),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers(op_def))
+          httr::add_headers(.headers = header_function(op_def))
         )
         handle_response(result)
       }
@@ -354,7 +358,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           config = get_config(op_def),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers(op_def))
+          httr::add_headers(.headers = header_function(op_def))
         )
         handle_response(result)
       }
@@ -366,7 +370,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           config = get_config(op_def),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers(op_def))
+          httr::add_headers(.headers = header_function(op_def))
         )
         handle_response(result)
       }
@@ -378,7 +382,7 @@ get_operations <- function(api, .headers = NULL, path = NULL,
           config = get_config(op_def),
           httr::content_type("application/json"),
           get_accept(op_def),
-          httr::add_headers(.headers = .headers(op_def))
+          httr::add_headers(.headers = header_function(op_def))
         )
         handle_response(result)
       }
@@ -452,14 +456,12 @@ get_message_body <- function(op_def, x) {
 #'
 #' Build operations operation url for specified parameter values
 #'
-#' @param scheme http or https
-#' @param host host name with port (delimited by ":")
-#' @param base_path base path, defined in api specification
+#' @param api api object
 #' @param op_def a single operation definition
 #' @param par_values parameter values in a list
 #' @seealso \code{\link{get_operation_definitions}}
 #' @keywords internal
-build_op_url <- function(api, scheme, host, base_path, op_def, par_values) {
+build_op_url <- function(api, op_def, par_values) {
   path <- op_def$path
   parameters <- op_def$parameters
   query <- NULL
@@ -490,11 +492,16 @@ build_op_url <- function(api, scheme, host, base_path, op_def, par_values) {
       query <- query[!vapply(query, is.null, logical(1))]
     }
   }
+  if (api$mode == "swagger") {
+    base_url <- paste0(api$schemes[1], "://", api$host, api$basePath)
+  } else if (api$mode == "openapi") {
+    base_url <- api$servers[[1]]$url
+  }
   # build url
   httr::modify_url(
     url =
       httr::parse_url(
-        paste0(api$schemes[1], "://", api$host, api$basePath, path )
+        paste0(base_url, path )
       ),
     query = query
   )

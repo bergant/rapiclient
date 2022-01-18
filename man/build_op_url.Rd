@@ -4,14 +4,10 @@
 \alias{build_op_url}
 \title{Build operations url}
 \usage{
-build_op_url(api, scheme, host, base_path, op_def, par_values)
+build_op_url(api, op_def, par_values)
 }
 \arguments{
-\item{scheme}{http or https}
-
-\item{host}{host name with port (delimited by ":")}
-
-\item{base_path}{base path, defined in api specification}
+\item{api}{api object}
 
 \item{op_def}{a single operation definition}
 
