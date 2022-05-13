@@ -260,6 +260,10 @@ get_operations <- function(api, .headers = NULL, path = NULL,
     get_accept <- function(op_def) {
       if (is.null(op_def$produces)) {
         httr::accept_json()
+      } else if(length(op_def$produces) > 1) {
+        for(each in op_def$produces) {
+          httr::accept(each)
+        }
       } else {
         httr::accept(op_def$produces)
       }
