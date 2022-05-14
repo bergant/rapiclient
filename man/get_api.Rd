@@ -9,7 +9,8 @@ get_api(url, config = NULL)
 \arguments{
 \item{url}{Api url (can be json or yaml format)}
 
-\item{config}{httr::config() curl options.}
+\item{config}{httr::config() curl options, provided either as an object or a
+callback function}
 }
 \value{
 API object
@@ -21,6 +22,19 @@ Create API object from Swagger specification
 \dontrun{
 # create operation and schema functions
 api <- get_api(api_url)
+operations <- get_operations(api)
+schemas <- get_schemas(api)
+
+# create operations with custom config callback
+config <- function(op_def) {
+   if (op_def$operationId == "createUser") {
+      httr::config(verbose = TRUE)
+   } else {
+      httr::config()
+   }
+}
+
+api <- get_api(api_url, config)
 operations <- get_operations(api)
 schemas <- get_schemas(api)
 }
