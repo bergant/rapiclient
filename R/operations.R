@@ -129,6 +129,9 @@ get_operation_definitions <- function(api, path = NULL) {
       if(is.null(operation$parameters) || length(operation$parameters)==0) {
         operation$parameters <- api$paths[[path_name]]$parameters
       }
+      else if(!is.null(api$paths[[path_name]]$parameters) && length(api$paths[[path_name]]$parameters)>0) {
+        operation$parameters <- c(operation$parameters, api$paths[[path_name]]$parameters)
+      }
 
       # get referenced parameters (when parameter has $ref = #/parameters/...)
       operation$parameters <-
