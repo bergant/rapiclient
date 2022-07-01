@@ -134,16 +134,11 @@ get_operation_definitions <- function(api, path = NULL) {
         operation$parameters <- api$paths[[path_name]]$parameters
       } else {
         ## check names in operations parameters
-        name_params <- .get_names(operation$parameters)
-        name_o_params <- .get_names(api$paths[[path_name]]$parameters)
-        ## match by name and replace
-        matchIdx <- match(name_o_params, name_params)
-        no_match <- is.na(matchIdx)
-        operation$parameters[na.omit(matchIdx)] <-
-          api$paths[[path_name]]$parameters[!no_match]
-        ## include unmatched operation params
+        name_o_params <- .get_names(operation$parameters)
+        name_api_params <- .get_names(api$paths[[path_name]]$parameters)
+        keep_idx <- !duplicated(c(name_o_params, name_api_params))
         operation$parameters <-
-          c(operation$parameters, api$paths[[path_name]]$parameters[no_match])
+          c(operation$parameters, api$paths[[path_name]]$parameters)[keep_idx]
       }
 
       # get referenced parameters (when parameter has $ref = #/parameters/...)
