@@ -4,8 +4,7 @@
 \alias{get_operations}
 \title{Get operations}
 \usage{
-get_operations(api, .headers = NULL, path = NULL,
-  handle_response = identity)
+get_operations(api, .headers = NULL, path = NULL, handle_response = identity)
 }
 \arguments{
 \item{api}{API object (see \code{\link{get_api}})}

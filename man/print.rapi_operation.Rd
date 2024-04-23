@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{Operation}
 
-\item{...further}{arguments passed to or from other methods}
+\item{...}{further arguments passed to or from other methods}
 }
 \description{
 Print Operation
