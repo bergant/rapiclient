@@ -30,10 +30,9 @@
 #'
 #'   Please use \url{https://github.com/bergant/rapiclient/issues} for issues
 #'
-#' @docType package
 #' @name rapiclient-package
 #' @aliases rapiclient
-NULL
+"_PACKAGE"
 
 
 

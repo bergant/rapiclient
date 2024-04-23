@@ -30,11 +30,11 @@ See \code{\link{get_operations}} for details.
 }
 \section{Functions}{
 \itemize{
-\item \code{content_or_warning}: Returns content or issues a warning
+\item \code{content_or_warning()}: Returns content or issues a warning
 
-\item \code{content_or_message}: Returns content or prints a message
+\item \code{content_or_message()}: Returns content or prints a message
+
 }}
-
 \examples{
 \dontrun{
 operations <- get_operations(api, handle_response = content_or_stop)

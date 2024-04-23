@@ -42,3 +42,22 @@ operations$some_operation(x, y, schemas$some_structure(u, v, ...))
 }
 
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/bergant/rapiclient}
+  \item Report bugs at \url{https://github.com/bergant/rapiclient/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Darko Bergant \email{darko.bergant@gmail.com}
+
+Other contributors:
+\itemize{
+  \item Marcel Ramos [contributor]
+  \item Sean Davis [contributor]
+  \item Martin Morgan [contributor]
+}
+
+}

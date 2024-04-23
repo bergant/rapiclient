@@ -96,7 +96,7 @@ get_api <- function(url, config = NULL) {
 #' Operations are parsed from `paths`` element for every path and every action
 #' inside path. Operation name is set to `operationId` from each action.
 #'
-#' See also specification \url{http://swagger.io/specification/#operationObject}
+#' See also specification \url{https://swagger.io/specification/#operationObject}
 #'
 #' @param api API object
 #' @param path (optional) filter by path
@@ -123,7 +123,7 @@ get_operation_definitions <- function(api, path = NULL) {
 
       # parameters can be defined on path level and overridden on operation
       # level
-      # 
+      #
       # Note that parameters is often a list() rather than NULL, so deal
       # that situation as well.
       if(is.null(operation$parameters) || length(operation$parameters)==0) {
@@ -480,7 +480,6 @@ build_op_url <- function(api, scheme, host, base_path, op_def, par_values) {
 #' Extract all parameters from parameters definition as a list
 #' In case of reference to schema, use the schema.
 #' @param api API definition
-#' @param parameters_def A parameters from API operations definition
 #' @keywords internal
 get_parameters <- function(api, api_parameters) {
   parameters <- get_parameters_definition(api, api_parameters)
