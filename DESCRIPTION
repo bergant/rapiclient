@@ -3,8 +3,11 @@ Type: Package
 Title: Dynamic OpenAPI/Swagger Client
 Version: 0.1.4
 Authors@R: c(
-  person("Darko", "Bergant", , "darko.bergant@gmail.com", c("aut", "cre")),
-  person("Marcel", "Ramos", , , "ctb"),
+  person("Darko", "Bergant", , "darko.bergant@gmail.com", "aut"),
+  person("Marcel", "Ramos", , "marcel.ramos@roswellpark.org", c("cre", "ctb"),
+    comment = c(ORCID = "0000-0002-3242-0582")
+  ),
+  person("Alexandru", "Mahmoud", , , "ctb"),
   person("Sean", "Davis", , , "ctb"),
   person("Martin", "Morgan", , , "ctb")
   )
