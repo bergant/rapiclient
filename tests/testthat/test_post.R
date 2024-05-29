@@ -14,7 +14,6 @@ test_that('only "in": "body" parameter is found', {
     expect_identical(expect, get_message_body(op_def, x))
     x <- list(param0 = "bad", param1 = "ok")
     expect_identical(expect, get_message_body(op_def, x))
-
 })
 
 test_that('several "in": "body" parameters work', {
