@@ -51,11 +51,16 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Darko Bergant \email{darko.bergant@gmail.com}
+\strong{Maintainer}: Marcel Ramos \email{marcel.ramos@roswellpark.org} (\href{https://orcid.org/0000-0002-3242-0582}{ORCID}) [contributor]
+
+Authors:
+\itemize{
+  \item Darko Bergant \email{darko.bergant@gmail.com}
+}
 
 Other contributors:
 \itemize{
-  \item Marcel Ramos [contributor]
+  \item Alexandru Mahmoud [contributor]
   \item Sean Davis [contributor]
   \item Martin Morgan [contributor]
 }

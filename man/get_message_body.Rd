@@ -4,14 +4,17 @@
 \alias{get_message_body}
 \title{Message body}
 \usage{
-get_message_body(op_def, x)
+get_message_body(op_def, body, auto_unbox = TRUE)
 }
 \arguments{
 \item{op_def}{A list representation of the swagger / openAPI
 description of the operation.}
 
-\item{x}{A list representation of the operation arguments provided
+\item{body}{A list representation of the operation arguments provided
 by the user.}
+
+\item{auto_unbox}{automatically \code{\link[jsonlite:unbox]{unbox()}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link[jsonlite:unbox]{unbox()}} function to unbox individual elements.
+An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{\link[=I]{I()}}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.}
 }
 \value{
 A JSON character representation (for `body`) or list of
