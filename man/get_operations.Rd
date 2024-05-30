@@ -61,6 +61,7 @@ sending a request.
 \examples{
 \dontrun{
 # create operation and schema functions
+api_url <- "http://petstore.swagger.io/v2/swagger.json"
 api <- get_api(api_url)
 operations <- get_operations(api)
 schemas <- get_schemas(api)
@@ -70,6 +71,6 @@ operations <- get_operations(api, handle_response = content_or_stop)
 
 # use .headers when operations must send additional heders when sending
 operations <-
-  get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+  get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY")))
 }
 }
