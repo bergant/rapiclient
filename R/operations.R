@@ -5,6 +5,21 @@
 .class_schema <- "rapi_schema"
 .class_schema_function <- "rapi_schema_function"
 
+get_api_yaml <- function(url) {
+    if (startsWith(url, "http")) {
+        url0 <- url(url)
+        open(url0)
+        on.exit(close(url0))
+        yaml::yaml.load_file(url0)
+    } else {
+        yaml::yaml.load_file(url)
+    }
+}
+
+get_api_json <- function(url) {
+    jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
+}
+
 #' Get API
 #'
 #' Create API object from Swagger specification
@@ -25,23 +40,15 @@
 #' }
 #' @export
 get_api <- function(url, config = NULL) {
-  api = NULL
-  api <- tryCatch({
-      jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
-  }, error=function(x) NULL)
-  if (is.null(api))
-      tryCatch({
-          if (startsWith(url, "http")) {
-              url0 <- url(url)
-              open(url0)
-              api <- yaml::yaml.load_file(url0)
-              close(url0)
-          } else {
-              api <- yaml::yaml.load_file(url)
-          }
-      }, error = function(x) NULL)
-  if (is.null(api))
+    ext <- tools::file_ext(url)
+    FUN <- switch(
+      ext,
+      yml =,
+      yaml = get_api_yaml,
+      json = get_api_json,
       stop("'url' does not appear to be JSON or YAML")
+    )
+    api <- FUN(url)
 
   # swagger element is required
   if (is.null(api$swagger)) {
