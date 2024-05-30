@@ -22,6 +22,7 @@ License: MIT + file LICENSE
 Imports:
   jsonlite,
   httr,
+  tools,
   yaml
 Encoding: UTF-8
 RoxygenNote: 7.3.1
