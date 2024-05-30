@@ -43,11 +43,11 @@ get_api_json <- function(url) {
 get_api <- function(url, config = NULL) {
     ext <- tolower(tools::file_ext(url))
     FUN <- switch(
-      ext,
-      yml =,
-      yaml = get_api_yaml,
-      json = get_api_json,
-      stop("'url' does not appear to be JSON or YAML")
+        ext,
+        yml =,
+        yaml = get_api_yaml,
+        json = get_api_json,
+        stop("'url' does not appear to be JSON or YAML")
     )
     api <- FUN(url)
 
