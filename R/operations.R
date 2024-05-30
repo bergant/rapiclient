@@ -40,7 +40,7 @@ get_api_json <- function(url) {
 #' }
 #' @export
 get_api <- function(url, config = NULL) {
-    ext <- tools::file_ext(url)
+    ext <- tolower(tools::file_ext(url))
     FUN <- switch(
       ext,
       yml =,
