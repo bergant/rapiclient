@@ -82,3 +82,101 @@ test_that("get_message_body prints log", {
     )
     file.remove(writefile)
 })
+
+test_that("*_for_status works", {
+    response <- structure(
+        list(
+            url = "https://petstore.swagger.io/v2/pet/findByStatus",
+            status_code = 400L,
+            headers = structure(
+                list(
+                    `content-type` = "application/json"
+                ), class = c("insensitive", "list")
+            ),
+            content = raw(0L)
+        ), class = "response"
+    )
+    expect_error(
+        content_or_stop(response),
+        "Bad Request \\(HTTP 400\\)\\."
+    )
+
+    response <- structure(
+        list(
+            url = "https://petstore.swagger.io/v2/pet/findByStatus",
+            status_code = 300L,
+            headers = structure(
+                list(
+                    `content-type` = "application/json"
+                ), class = c("insensitive", "list")
+            ),
+            content = raw(0L)
+        ), class = "response"
+    )
+    expect_warning(
+        content_or_warning(response),
+        "Multiple Choices \\(HTTP 300\\)\\."
+    )
+
+    response <- structure(
+        list(
+            url = "https://petstore.swagger.io/v2/pet/findByStatus",
+            status_code = 200L,
+            headers = structure(
+                list(
+                    `content-type` = "application/json"
+                ), class = c("insensitive", "list")
+            ),
+            content = raw(0L)
+        ), class = "response"
+    )
+    expect_message(
+        content_or_message(response),
+        "OK \\(HTTP 200\\)\\."
+    )
+
+    dat <- list(id = 123L, name = "fluffy", status = "sold")
+    response <- structure(
+        list(
+            url = "https://petstore.swagger.io/v2/pet/findByStatus",
+            status_code = 200L,
+            headers = structure(
+                list(
+                    `content-type` = "application/json"
+                ), class = c("insensitive", "list")
+            ),
+            content = charToRaw(
+                as.character(
+                    jsonlite::toJSON(dat, auto_unbox = TRUE)
+                )
+            )
+        ), class = "response"
+    )
+    expect_identical(
+        content_or_stop(response),
+        dat
+    )
+    expect_identical(
+        content_or_warning(response),
+        dat
+    )
+    ## message_for_status converts to NULL
+    expect_identical(
+        content_or_message(response),
+        NULL
+    )
+
+    response <- 200L
+    expect_identical(
+        content_or_stop(response),
+        200L
+    )
+    expect_identical(
+        content_or_warning(response),
+        200L
+    )
+    expect_message(
+        content_or_message(response),
+        "OK \\(HTTP 200\\)\\."
+    )
+})
