@@ -20,6 +20,7 @@ Create API object from Swagger specification
 \examples{
 \dontrun{
 # create operation and schema functions
+api_url <- "http://petstore.swagger.io/v2/swagger.json"
 api <- get_api(api_url)
 operations <- get_operations(api)
 schemas <- get_schemas(api)

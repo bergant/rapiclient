@@ -34,6 +34,7 @@ get_api_json <- function(url) {
 #' @examples
 #' \dontrun{
 #' # create operation and schema functions
+#' api_url <- "http://petstore.swagger.io/v2/swagger.json"
 #' api <- get_api(api_url)
 #' operations <- get_operations(api)
 #' schemas <- get_schemas(api)
@@ -230,6 +231,7 @@ get_operation_definitions <- function(api, path = NULL) {
 #' @examples
 #' \dontrun{
 #' # create operation and schema functions
+#' api_url <- "http://petstore.swagger.io/v2/swagger.json"
 #' api <- get_api(api_url)
 #' operations <- get_operations(api)
 #' schemas <- get_schemas(api)
@@ -239,7 +241,7 @@ get_operation_definitions <- function(api, path = NULL) {
 #'
 #' # use .headers when operations must send additional heders when sending
 #' operations <-
-#'   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+#'   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY")))
 #' }
 #' @export
 get_operations <-
