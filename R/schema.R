@@ -42,7 +42,9 @@ get_allOf <- function(api, obj_allOf) {
 #
 get_schema_function <- function(schema) {
   par_names <- names(schema$properties)
-  parameters <- stats::setNames(vector("list", length(par_names)), par_names)
+  parameters <- structure(
+    vector("list", length(par_names)), .Names = par_names
+  )
 
   f1 <- function() {
     l1 <- as.list(mget(names(formals()), environment()))
