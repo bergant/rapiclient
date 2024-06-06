@@ -15,7 +15,7 @@
     .__body__ <- .__body__[!vapply(.__body__, is.null, logical(1))]
     stopifnot(
         all(names(dot_args) %in% names(body0)),
-        all(names(body) %in% names(body0)),
+        all(names(.__body__) %in% names(body0)),
         `duplicate values for some '.__body__' arguments` =
             !any(names(dot_args) %in% names(.__body__))
     )
