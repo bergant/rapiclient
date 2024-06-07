@@ -29,7 +29,6 @@ get_api_json <- function(url) {
 #' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #' @return API object
 #'
-#' @importFrom yaml yaml.load_file
 #'
 #' @examples
 #' \dontrun{
@@ -178,10 +177,11 @@ get_operation_definitions <- function(api, path = NULL) {
           operation$operationId <- gsub("^_", "", operation$operationId)
         }
       }
-      ret <- c(ret, stats::setNames(list(operation), operation$operationId))
+      ret <- c(ret, structure(list(operation), .Names = operation$operationId))
     }
   }
-  stats::setNames(ret, trimws(names(ret)))
+  names(ret) <- trimws(names(ret))
+  ret
 }
 
 
@@ -434,9 +434,8 @@ get_parameters <- function(api, api_parameters) {
 
   if(length(parameters)) {
     parameters <- unlist(parameters)
-    parameters <- stats::setNames(
-      vector("list", length(parameters)),
-      parameters
+    parameters <- structure(
+      vector("list", length(parameters)), .Names = parameters
     )
   }
   parameters

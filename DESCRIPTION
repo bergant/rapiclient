@@ -22,7 +22,6 @@ License: MIT + file LICENSE
 Imports:
   jsonlite,
   httr,
-  stats,
   tools,
   yaml
 Encoding: UTF-8
