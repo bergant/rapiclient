@@ -69,7 +69,7 @@ schemas <- get_schemas(api)
 # get operations which return content or stop on error
 operations <- get_operations(api, handle_response = content_or_stop)
 
-# use .headers when operations must send additional heders when sending
+# use .headers when operations must send additional headers when sending
 operations <-
   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY")))
 }

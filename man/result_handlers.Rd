@@ -36,7 +36,11 @@ See \code{\link{get_operations}} for details.
 
 }}
 \examples{
-\dontrun{
+api_file <- system.file(
+  "extdata", "sample_specs", "petstore.yaml",
+  package = "rapiclient", mustWork = TRUE
+)
+api <- get_api(api_file)
 operations <- get_operations(api, handle_response = content_or_stop)
-}
+
 }
