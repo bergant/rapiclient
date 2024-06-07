@@ -25,10 +25,12 @@ get_api_json <- function(url) {
 #' Create API object from Swagger specification
 #'
 #' @param url Api url (can be json or yaml format)
-#' @param config httr::config() curl options.
-#' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
-#' @return API object
 #'
+#' @param config httr::config() curl options.
+#'
+#' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
+#'
+#' @return API object
 #'
 #' @examples
 #' \dontrun{
@@ -239,7 +241,7 @@ get_operation_definitions <- function(api, path = NULL) {
 #' # get operations which return content or stop on error
 #' operations <- get_operations(api, handle_response = content_or_stop)
 #'
-#' # use .headers when operations must send additional heders when sending
+#' # use .headers when operations must send additional headers when sending
 #' operations <-
 #'   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY")))
 #' }
@@ -480,14 +482,21 @@ get_parameters_from_schema <- function(api, schema) {
 #' See \code{\link{get_operations}} for details.
 #'
 #' @name result_handlers
+#'
 #' @param x A response object from httr package (see \link[httr]{response}
 #'   object in \pkg{httr} package  documentation)
+#'
 #' @return Content of http response
-#' @export
+#'
 #' @examples
-#' \dontrun{
+#' api_file <- system.file(
+#'   "extdata", "sample_specs", "petstore.yaml",
+#'   package = "rapiclient", mustWork = TRUE
+#' )
+#' api <- get_api(api_file)
 #' operations <- get_operations(api, handle_response = content_or_stop)
-#' }
+#'
+#' @export
 content_or_stop <- function(x) {
   res <- httr::stop_for_status(x)
   if(inherits(res, "response")) {
