@@ -4,7 +4,7 @@ Title: Dynamic OpenAPI/Swagger Client
 Version: 0.1.6
 Authors@R: c(
   person("Darko", "Bergant", , "darko.bergant@gmail.com", "aut"),
-  person("Marcel", "Ramos", , "marcel.ramos@roswellpark.org", c("cre", "ctb"),
+  person("Marcel", "Ramos", , "marcel.ramos@sph.cuny.edu", c("cre", "ctb"),
     comment = c(ORCID = "0000-0002-3242-0582")
   ),
   person("Alexandru", "Mahmoud", , , "ctb"),
