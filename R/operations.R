@@ -5,19 +5,29 @@
 .class_schema <- "rapi_schema"
 .class_schema_function <- "rapi_schema_function"
 
-get_api_yaml <- function(url) {
+fetch_content <- function(url, config = NULL) {
     if (startsWith(url, "http")) {
-        url0 <- url(url)
-        open(url0)
-        on.exit(close(url0))
-        yaml::yaml.load_file(url0)
+        response <- httr::GET(url, config = config)
+        if (httr::status_code(response) != 200) {
+            stop("Failed to fetch the URL. Status code: ", httr::status_code(response))
+        }
+        # Extract content as text
+        content_text <- httr::content(response, "text")
     } else {
-        yaml::yaml.load_file(url)
+        # Read the file directly if it's not an HTTP URL
+        content_text <- readLines(url, warn = FALSE)
     }
+    return(content_text)
 }
 
-get_api_json <- function(url) {
-    jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
+get_api_yaml <- function(url, config = NULL) {
+    content_text <- fetch_content(url, config)
+    yaml::yaml.load(content_text)
+}
+
+get_api_json <- function(url, config = NULL) {
+    content_text <- fetch_content(url, config)
+    jsonlite::fromJSON(content_text, simplifyDataFrame = FALSE)
 }
 
 #' Get API
@@ -27,6 +37,8 @@ get_api_json <- function(url) {
 #' @param url Api url (can be json or yaml format)
 #'
 #' @param config httr::config() curl options.
+#'
+#' @param type string indicating format (yaml or json), will deduce from url file extension if not set.
 #'
 #' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #'
@@ -41,8 +53,9 @@ get_api_json <- function(url) {
 #' schemas <- get_schemas(api)
 #' }
 #' @export
-get_api <- function(url, config = NULL) {
-    ext <- tolower(tools::file_ext(url))
+get_api <- function(url, config = NULL, type = NULL) {
+    ext <- type
+    if (is.null(type)) {ext <- tolower(tools::file_ext(url))}
     FUN <- switch(
         ext,
         yml =,
@@ -50,7 +63,7 @@ get_api <- function(url, config = NULL) {
         json = get_api_json,
         stop("'url' does not appear to be JSON or YAML")
     )
-    api <- FUN(url)
+    api <- FUN(url, config)
 
   # swagger element is required
   if (is.null(api$swagger)) {

@@ -4,7 +4,7 @@
 \alias{get_api}
 \title{Get API}
 \usage{
-get_api(url, config = NULL)
+get_api(url, config = NULL, type = NULL)
 }
 \arguments{
 \item{url}{Api url (can be json or yaml format)}
