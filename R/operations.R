@@ -28,6 +28,10 @@ get_api_json <- function(url) {
 #'
 #' @param config httr::config() curl options.
 #'
+#' @param ext the file extension of the API file (either 'yaml' or 'json'). By
+#'   default, it is obtained from the URL with `tools::file_ext` and should
+#'   be provided when the file URL is missing an extension.
+#'
 #' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
 #'
 #' @return API object
@@ -41,14 +45,18 @@ get_api_json <- function(url) {
 #' schemas <- get_schemas(api)
 #' }
 #' @export
-get_api <- function(url, config = NULL) {
-    ext <- tolower(tools::file_ext(url))
+get_api <- function(url, config = NULL, ext) {
+    if (missing(ext))
+        ext <- tolower(tools::file_ext(url))
     FUN <- switch(
         ext,
         yml =,
         yaml = get_api_yaml,
         json = get_api_json,
-        stop("'url' does not appear to be JSON or YAML")
+        stop(
+            "'url' does not appear to be JSON or YAML.",
+            " If format is known, provide 'ext' as input."
+        )
     )
     api <- FUN(url)
 
