@@ -69,6 +69,10 @@ test_that(".get_accept works", {
         httr::accept("*/*")
     )
     expect_identical(
+        .get_accept(list(produces = "*/*")),
+        httr::accept("*/*")
+    )
+    expect_identical(
         .get_accept(list(produces = NULL)),
         httr::accept("*/*")
     )
