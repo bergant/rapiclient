@@ -9,6 +9,7 @@ extension; this ensures that the file is properly parsed (@almahmoud, #26).
 
 * `config` argument in `get_api` is passed along to the `GET` call for
 non-public APIs that require a token (@almahmoud, #26).
+* `get_api` handles both URLs and files (either `json` or `yml`)
 
 # rapiclient 0.1.6
 
