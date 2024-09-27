@@ -345,6 +345,8 @@ get_message_body <- function(op_def, body, auto_unbox = TRUE) {
     if (identical(op_def$consumes, "multipart/form-data")) {
         json <- body
     } else {
+        if (identical(length(body), 1L))
+            body <- body[[1L]]
         ## unbox?
         name <- vapply(op_def$parameters, `[[`, character(1), "name")
         type <- vapply(op_def$parameters, function(elt) {
@@ -364,8 +366,6 @@ get_message_body <- function(op_def, body, auto_unbox = TRUE) {
                 idx <- match(nm, name)
                 if (type[idx] %in% c("string", "number", "integer", "boolean"))
                     body[[nm]] <- jsonlite::unbox(body[[nm]])
-                else if (identical(length(body), 1L))
-                    body <- body[[nm]]
             }
             json <- jsonlite::toJSON(
                 body, pretty = TRUE, auto_unbox = auto_unbox
