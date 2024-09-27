@@ -1,6 +1,7 @@
 test_that("API info, swagger, etc. elements are checked", {
     with_mocked_bindings(
-        get_api_json = function(...) {
+        fetch_content = function(...) { "" },
+        read_api_json = function(...) {
             list(swagger = NULL, info = TRUE, paths = "ok")
         },
         expect_warning(
@@ -12,7 +13,8 @@ test_that("API info, swagger, etc. elements are checked", {
     )
 
     with_mocked_bindings(
-        get_api_json = function(...) {
+        fetch_content = function(...) { "" },
+        read_api_json = function(...) {
             list(info = NULL, swagger = TRUE, paths = "ok")
         },
         expect_warning(
@@ -24,7 +26,8 @@ test_that("API info, swagger, etc. elements are checked", {
     )
 
     with_mocked_bindings(
-        get_api_json = function(...) {
+        fetch_content = function(...) { "" },
+        read_api_json = function(...) {
             list(info = TRUE, swagger = TRUE, paths = NULL)
         },
         expect_warning(
@@ -36,7 +39,8 @@ test_that("API info, swagger, etc. elements are checked", {
     )
 
     with_mocked_bindings(
-        get_api_json = function(...) {
+        fetch_content = function(...) { "" },
+        read_api_json = function(...) {
             list(info = TRUE, swagger = TRUE, paths = "ok")
         },
         expect_identical(
@@ -48,7 +52,8 @@ test_that("API info, swagger, etc. elements are checked", {
     )
 
     with_mocked_bindings(
-        get_api_json = function(...) {
+        fetch_content = function(...) { "" },
+        read_api_json = function(...) {
             list(info = TRUE, swagger = TRUE, paths = "ok")
         },
         expect_error(
@@ -180,3 +185,4 @@ test_that("*_for_status works", {
         "OK \\(HTTP 200\\)\\."
     )
 })
+
