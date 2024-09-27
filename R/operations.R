@@ -5,19 +5,18 @@
 .class_schema <- "rapi_schema"
 .class_schema_function <- "rapi_schema_function"
 
-get_api_yaml <- function(url) {
-    if (startsWith(url, "http")) {
-        url0 <- url(url)
-        open(url0)
-        on.exit(close(url0))
-        yaml::yaml.load_file(url0)
-    } else {
-        yaml::yaml.load_file(url)
-    }
+fetch_content <- function(url, config = NULL) {
+    response <- httr::GET(url, config = config)
+    httr::stop_for_status(response, "fetch_content_url")
+    httr::content(response, as = "text", encoding = "UTF-8")
 }
 
-get_api_json <- function(url) {
-    jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
+read_api_yaml <- function(apitext) {
+    yaml::yaml.load(apitext)
+}
+
+read_api_json <- function(apitext) {
+    jsonlite::fromJSON(apitext, simplifyDataFrame = FALSE)
 }
 
 #' Get API
@@ -51,14 +50,15 @@ get_api <- function(url, config = NULL, ext) {
     FUN <- switch(
         ext,
         yml =,
-        yaml = get_api_yaml,
-        json = get_api_json,
+        yaml = read_api_yaml,
+        json = read_api_json,
         stop(
             "'url' does not appear to be JSON or YAML.",
             " If format is known, provide 'ext' as input."
         )
     )
-    api <- FUN(url)
+    apitext <- fetch_content(url, config = config)
+    api <- FUN(apitext)
 
   # swagger element is required
   if (is.null(api$swagger)) {
