@@ -6,6 +6,8 @@
 .class_schema_function <- "rapi_schema_function"
 
 fetch_content <- function(url, config = NULL) {
+    if (!startsWith(url, "http") && file.exists(url))
+        return(readLines(url, encoding = "UTF-8"))
     response <- httr::GET(url, config = config)
     httr::stop_for_status(response, "fetch_content_url")
     httr::content(response, as = "text", encoding = "UTF-8")
@@ -23,7 +25,7 @@ read_api_json <- function(apitext) {
 #'
 #' Create API object from Swagger specification
 #'
-#' @param url Api url (can be json or yaml format)
+#' @param url API URL or file (can be json or yaml format)
 #'
 #' @param config httr::config() curl options.
 #'
