@@ -1,3 +1,15 @@
+# rapiclient 0.1.7
+
+## User visible changes
+
+* `get_api` now has an `ext` argument for API urls that are missing a file
+extension; this ensures that the file is properly parsed (@almahmoud, #26).
+
+## Bug fixes and minor improvements
+
+* `config` argument in `get_api` is passed along to the `GET` call for
+non-public APIs that require a token (@almahmoud, #26).
+
 # rapiclient 0.1.6
 
 ## User visible changes
