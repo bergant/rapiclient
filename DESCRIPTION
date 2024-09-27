@@ -1,7 +1,7 @@
 Package: rapiclient
 Type: Package
 Title: Dynamic OpenAPI/Swagger Client
-Version: 0.1.6.0004
+Version: 0.1.7
 Authors@R: c(
   person("Darko", "Bergant", , "darko.bergant@gmail.com", "aut"),
   person("Marcel", "Ramos", , "marcel.ramos@sph.cuny.edu", c("cre", "ctb"),
