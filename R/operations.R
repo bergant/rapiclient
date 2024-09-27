@@ -345,10 +345,10 @@ get_message_body <- function(op_def, body, auto_unbox = TRUE) {
     if (identical(op_def$consumes, "multipart/form-data")) {
         json <- body
     } else {
-        if (identical(length(body), 1L))
-            body <- body[[1L]]
         ## unbox?
         name <- vapply(op_def$parameters, `[[`, character(1), "name")
+        ## match body names first
+        body <- body[names(body) %in% name]
         type <- vapply(op_def$parameters, function(elt) {
             type <- elt$type
             if (is.null(type)) {
@@ -358,7 +358,8 @@ get_message_body <- function(op_def, body, auto_unbox = TRUE) {
                 type
             }
         }, character(1))
-        body <- body[names(body) %in% name]
+        if (identical(length(body), 1L))
+            body <- body[[1L]]
         if (is.null(body) || all(is.na(body)) || !length(body)) {
             json <- structure("{}", class = "json")
         } else {
