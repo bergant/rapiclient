@@ -1,3 +1,10 @@
+# rapiclient 0.1.8
+
+## User visible changes
+
+* When present, combine operation parameters and api path-level parameters, 
+where the former take precedence (@almahmoud, #23)
+
 # rapiclient 0.1.7
 
 ## User visible changes
