@@ -108,6 +108,10 @@ get_api <- function(url, config = NULL, ext) {
   api
 }
 
+.get_names <- function(list) {
+  vapply(list, `[[`, character(1L), "name")
+}
+
 #' Get Operations Definitions
 #'
 #' Get a list of operations definitions from API specification
@@ -147,6 +151,13 @@ get_operation_definitions <- function(api, path = NULL) {
       # that situation as well.
       if(is.null(operation$parameters) || length(operation$parameters)==0) {
         operation$parameters <- api$paths[[path_name]]$parameters
+      } else {
+        ## check names in operations parameters
+        name_o_params <- .get_names(operation$parameters)
+        name_api_params <- .get_names(api$paths[[path_name]]$parameters)
+        keep_idx <- !duplicated(c(name_o_params, name_api_params))
+        operation$parameters <-
+          c(operation$parameters, api$paths[[path_name]]$parameters)[keep_idx]
       }
 
       # get referenced parameters (when parameter has $ref = #/parameters/...)
