@@ -186,3 +186,57 @@ test_that("*_for_status works", {
     )
 })
 
+test_that("get_operation_definitions works", {
+    api <- list(paths = list(`/api/v1/namespaces` = list(
+        get = list(
+            parameters  = list(list(
+                uniqueItems = TRUE,
+                type = "boolean",
+                description =
+                    "allowWatchBookmarks requests watch events",
+                name = "allowWatchBookmarks",
+                `in` = "query"
+            ))
+        ),
+        parameters = list(
+            list(
+                uniqueItems = TRUE, type = "string",
+                description = "If 'true', then the output is pretty printed.",
+                name = "pretty", `in` = "query"
+            )
+        )
+    )))
+    ops <- get_operation_definitions(api, path = "/api/v1/namespaces")
+    expect_identical(
+        length(ops$api_v1_namespaces$parameters), 2L
+    )
+    expect_identical(
+        ops,
+        list(
+            api_v1_namespaces =
+                list(parameters = list(
+                    list(
+                        uniqueItems = TRUE,
+                        type = "boolean",
+                        description =
+                            "allowWatchBookmarks requests watch events",
+                        name = "allowWatchBookmarks",
+                        `in` = "query"
+                    ),
+                    list(
+                        uniqueItems = TRUE,
+                        type = "string",
+                        description =
+                            "If 'true', then the output is pretty printed.",
+                        name = "pretty",
+                        `in` = "query"
+                    )
+                ),
+            path = "/api/v1/namespaces",
+            action = "get",
+            operationId = "api_v1_namespaces")
+        )
+    )
+})
+
+
