@@ -8,8 +8,6 @@ get_parameters(api, api_parameters)
 }
 \arguments{
 \item{api}{API definition}
-
-\item{parameters_def}{A parameters from API operations definition}
 }
 \description{
 Extract all parameters from parameters definition as a list

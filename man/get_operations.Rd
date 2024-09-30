@@ -4,8 +4,13 @@
 \alias{get_operations}
 \title{Get operations}
 \usage{
-get_operations(api, .headers = NULL, path = NULL,
-  handle_response = identity)
+get_operations(
+  api,
+  .headers = NULL,
+  path = NULL,
+  handle_response = identity,
+  auto_unbox = FALSE
+)
 }
 \arguments{
 \item{api}{API object (see \code{\link{get_api}})}
@@ -17,6 +22,9 @@ get_operations(api, .headers = NULL, path = NULL,
 
 \item{handle_response}{(optional) A function with a single argument: httr
 response}
+
+\item{auto_unbox}{automatically \code{\link[jsonlite:unbox]{unbox()}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link[jsonlite:unbox]{unbox()}} function to unbox individual elements.
+An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{\link[=I]{I()}}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.}
 }
 \value{
 A list of functions.
@@ -53,6 +61,7 @@ sending a request.
 \examples{
 \dontrun{
 # create operation and schema functions
+api_url <- "http://petstore.swagger.io/v2/swagger.json"
 api <- get_api(api_url)
 operations <- get_operations(api)
 schemas <- get_schemas(api)
@@ -60,8 +69,8 @@ schemas <- get_schemas(api)
 # get operations which return content or stop on error
 operations <- get_operations(api, handle_response = content_or_stop)
 
-# use .headers when operations must send additional heders when sending
+# use .headers when operations must send additional headers when sending
 operations <-
-  get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+  get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY")))
 }
 }

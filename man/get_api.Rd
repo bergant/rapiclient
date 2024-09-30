@@ -4,12 +4,16 @@
 \alias{get_api}
 \title{Get API}
 \usage{
-get_api(url, config = NULL)
+get_api(url, config = NULL, ext)
 }
 \arguments{
-\item{url}{Api url (can be json or yaml format)}
+\item{url}{API URL or file (can be json or yaml format)}
 
 \item{config}{httr::config() curl options.}
+
+\item{ext}{the file extension of the API file (either 'yaml' or 'json'). By
+default, it is obtained from the URL with `tools::file_ext` and should
+be provided when the file URL is missing an extension.}
 }
 \value{
 API object
@@ -20,6 +24,7 @@ Create API object from Swagger specification
 \examples{
 \dontrun{
 # create operation and schema functions
+api_url <- "http://petstore.swagger.io/v2/swagger.json"
 api <- get_api(api_url)
 operations <- get_operations(api)
 schemas <- get_schemas(api)

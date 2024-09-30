@@ -30,13 +30,17 @@ See \code{\link{get_operations}} for details.
 }
 \section{Functions}{
 \itemize{
-\item \code{content_or_warning}: Returns content or issues a warning
+\item \code{content_or_warning()}: Returns content or issues a warning
 
-\item \code{content_or_message}: Returns content or prints a message
+\item \code{content_or_message()}: Returns content or prints a message
+
 }}
-
 \examples{
-\dontrun{
+api_file <- system.file(
+  "extdata", "sample_specs", "petstore.yaml",
+  package = "rapiclient", mustWork = TRUE
+)
+api <- get_api(api_file)
 operations <- get_operations(api, handle_response = content_or_stop)
-}
+
 }

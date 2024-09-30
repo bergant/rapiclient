@@ -3,12 +3,11 @@ get_schema <- function(api, ref, compose_allOf = FALSE) {
     ref <- paste0("#/definitions/", ref)
   }
   ref_pos <- strsplit(ref, "/")[[1]]
-  schema <- api[[ref_pos[[2]]]][[ref_pos[[3]]]]
+  schema <- api[[ref_pos[2:3]]]
   if(is.null(schema)) {
     ref_pos <- gsub(" ", "_", ref_pos)
-    schema <- api[[ref_pos[[2]]]][[ref_pos[[3]]]]
+    schema <- api[[ref_pos[2:3]]]
   }
-
 
   if(!is.null(schema$allOf) && compose_allOf) {
     allOfProperties <- get_allOf(api, schema$allOf)
@@ -43,7 +42,9 @@ get_allOf <- function(api, obj_allOf) {
 #
 get_schema_function <- function(schema) {
   par_names <- names(schema$properties)
-  parameters <- stats::setNames(vector("list", length(par_names)), par_names)
+  parameters <- structure(
+    vector("list", length(par_names)), .Names = par_names
+  )
 
   f1 <- function() {
     l1 <- as.list(mget(names(formals()), environment()))
@@ -66,9 +67,11 @@ get_schema_function <- function(schema) {
 #' @return A list of functions
 #' @export
 get_schemas <- function(api) {
-
+    function_list <- structure(
+        as.list(names(api$definitions)), .Names = names(api$definitions)
+    )
   function_list <-
-    lapply(names(api$definitions), function(schema_name) {
+    lapply(function_list, function(schema_name) {
       schema <- get_schema(api, schema_name, compose_allOf = TRUE)
       if(length(schema$properties)) {
         get_schema_function(schema)
@@ -76,9 +79,7 @@ get_schemas <- function(api) {
         NULL
       }
     })
-  names(function_list) <- names(api$definitions)
-  function_list <- function_list[!vapply(function_list, is.null, logical(1))]
-  function_list
+    Filter(Negate(is.null), function_list)
 }
 
 

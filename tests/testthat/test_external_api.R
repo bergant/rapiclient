@@ -1,21 +1,20 @@
-#library(testthat)
-
 context("External API test")
 
 test_that("Reads external API operations", {
 
-  # This test will skip when not in interactive mode
-  # It reads api description from remote location.
-  #
-  # To run this test, use:
-  #  devtools::test(filter = "*external*")
+  skip_on_cran()
 
-  if(!interactive()) {
-    skip("Run only in interactive mode")
-  }
+  if (!requireNamespace("cBioPortalData", quietly = TRUE))
+    skip("'cBioPortalData' should be installed for these unit tests")
 
   # parse api specification
-  ext_api <- get_api("http://api.opentrials.net/v1/swagger.yaml")
+  api_file <- system.file(
+      "service", "cBioPortal", "api.json",
+      package = "cBioPortalData", mustWork = TRUE
+  )
+  ext_api <- suppressWarnings({
+      get_api(api_file)
+  })
 
   # operations and schemas
   operations <- get_operations(ext_api)

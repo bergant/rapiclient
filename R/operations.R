@@ -5,43 +5,62 @@
 .class_schema <- "rapi_schema"
 .class_schema_function <- "rapi_schema_function"
 
+fetch_content <- function(url, config = NULL) {
+    if (!startsWith(url, "http") && file.exists(url))
+        return(readLines(url, encoding = "UTF-8"))
+    response <- httr::GET(url, config = config)
+    httr::stop_for_status(response, "fetch_content_url")
+    httr::content(response, as = "text", encoding = "UTF-8")
+}
+
+read_api_yaml <- function(apitext) {
+    yaml::yaml.load(apitext)
+}
+
+read_api_json <- function(apitext) {
+    jsonlite::fromJSON(apitext, simplifyDataFrame = FALSE)
+}
+
 #' Get API
 #'
 #' Create API object from Swagger specification
 #'
-#' @param url Api url (can be json or yaml format)
-#' @param config httr::config() curl options.
-#' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
-#' @return API object
+#' @param url API URL or file (can be json or yaml format)
 #'
-#' @importFrom yaml yaml.load_file
+#' @param config httr::config() curl options.
+#'
+#' @param ext the file extension of the API file (either 'yaml' or 'json'). By
+#'   default, it is obtained from the URL with `tools::file_ext` and should
+#'   be provided when the file URL is missing an extension.
+#'
+#' @seealso See also \code{\link{get_operations}} and \code{\link{get_schemas}}
+#'
+#' @return API object
 #'
 #' @examples
 #' \dontrun{
 #' # create operation and schema functions
+#' api_url <- "http://petstore.swagger.io/v2/swagger.json"
 #' api <- get_api(api_url)
 #' operations <- get_operations(api)
 #' schemas <- get_schemas(api)
 #' }
 #' @export
-get_api <- function(url, config = NULL) {
-  api = NULL
-  api <- tryCatch({
-      jsonlite::fromJSON(url, simplifyDataFrame = FALSE)
-  }, error=function(x) NULL)
-  if (is.null(api))
-      tryCatch({
-          if (startsWith(url, "http")) {
-              url0 <- url(url)
-              open(url0)
-              api <- yaml::yaml.load_file(url0)
-              close(url0)
-          } else {
-              api <- yaml::yaml.load_file(url)
-          }
-      }, error = function(x) NULL)
-  if (is.null(api))
-      stop("'url' does not appear to be JSON or YAML")
+get_api <- function(url, config = NULL, ext) {
+    if (missing(ext))
+        ext <- tolower(tools::file_ext(url))
+    FUN <- switch(
+        ext,
+        yml =,
+        yaml = read_api_yaml,
+        json = read_api_json,
+        stop(
+            "'url' does not appear to be JSON or YAML.",
+            " If format is known, provide 'ext' as input."
+        )
+    )
+    apitext <- fetch_content(url, config = config)
+    api <- FUN(apitext)
 
   # swagger element is required
   if (is.null(api$swagger)) {
@@ -100,7 +119,7 @@ get_api <- function(url, config = NULL) {
 #' Operations are parsed from `paths`` element for every path and every action
 #' inside path. Operation name is set to `operationId` from each action.
 #'
-#' See also specification \url{http://swagger.io/specification/#operationObject}
+#' See also specification \url{https://swagger.io/specification/#operationObject}
 #'
 #' @param api API object
 #' @param path (optional) filter by path
@@ -181,10 +200,11 @@ get_operation_definitions <- function(api, path = NULL) {
           operation$operationId <- gsub("^_", "", operation$operationId)
         }
       }
-      ret <- c(ret, stats::setNames(list(operation), operation$operationId))
+      ret <- c(ret, structure(list(operation), .Names = operation$operationId))
     }
   }
-  stats::setNames(ret, trimws(names(ret)))
+  names(ret) <- trimws(names(ret))
+  ret
 }
 
 
@@ -218,15 +238,23 @@ get_operation_definitions <- function(api, path = NULL) {
 #'   argument to \code{get_operations} function.
 #'
 #' @param api API object (see \code{\link{get_api}})
+#'
 #' @param .headers Optional headers passed to httr functions. See
 #'   \code{\link[httr]{add_headers}} documentation
+#'
 #' @param path (optional) filter by path from API specification
+#'
 #' @param handle_response (optional) A function with a single argument: httr
 #'   response
+#'
+#' @inheritParams jsonlite::toJSON
+#'
 #' @return A list of functions.
+#'
 #' @examples
 #' \dontrun{
 #' # create operation and schema functions
+#' api_url <- "http://petstore.swagger.io/v2/swagger.json"
 #' api <- get_api(api_url)
 #' operations <- get_operations(api)
 #' schemas <- get_schemas(api)
@@ -234,156 +262,72 @@ get_operation_definitions <- function(api, path = NULL) {
 #' # get operations which return content or stop on error
 #' operations <- get_operations(api, handle_response = content_or_stop)
 #'
-#' # use .headers when operations must send additional heders when sending
+#' # use .headers when operations must send additional headers when sending
 #' operations <-
-#'   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY"))
+#'   get_operations(api, .headers = c("api-key" = Sys.getenv("SOME_API_KEY")))
 #' }
 #' @export
-get_operations <- function(api, .headers = NULL, path = NULL,
-                           handle_response = identity) {
+get_operations <-
+    function(
+        api, .headers = NULL, path = NULL,
+        handle_response = identity, auto_unbox = FALSE
+    )
+{
+    operation_defs <- get_operation_definitions(api, path)
+    lapply(operation_defs, function(op_def) {
+        what <- toupper(op_def$action)
+        if (!what %in% c("POST", "PATCH", "PUT", "GET", "HEAD", "DELETE"))
+            stop("unsupported REST operation '", what, "'")
+        HTTR_FUN <- get(what, envir = getNamespace("httr"))
+        FUN <- switch(
+            what,
+            POST =,
+            PATCH =,
+            PUT = function(..., .__body__ = list()) {
+                args <- .api_args(formals(), environment())
+                body0 <- .api_body(formals(), ..., .__body__ = .__body__)
+                body <-  get_message_body(op_def, body0, auto_unbox)
+                result <- HTTR_FUN(
+                    url = .get_url(api, op_def, args),
+                    config = .get_config(api),
+                    .get_content_type(op_def),
+                    .get_accept(op_def),
+                    httr::add_headers(.headers = .headers),
+                    body = body
+                )
+                handle_response(result)
+            },
+            GET =,
+            HEAD =,
+            DELETE = function(...) {
+                args <- .api_args(formals(), environment())
+                result <- HTTR_FUN(
+                    url = .get_url(api, op_def, args),
+                    config = .get_config(api),
+                    .get_content_type(op_def),
+                    .get_accept(op_def),
+                    httr::add_headers(.headers = .headers)
+                )
+                handle_response(result)
+            }
+        )
 
-  operation_defs <- get_operation_definitions(api, path)
-
-  param_values <- expression({
-    if (length(formals()) > 0) {
-      l1 <- as.list(mget(names(formals()), environment()))
-      l1 <- l1[lapply(l1, mode) != "name"]
-      x <- l1[!vapply(l1, is.null, logical(1))]
-    } else {
-      x <- list()
-    }
-    x
-  })
-
-  lapply(operation_defs, function(op_def){
-
-    # url
-    get_url <- function(x) {
-      url <-
-        build_op_url(api, api$schemes[1], api$host, api$basePath, op_def, x)
-      return(url)
-    }
-
-    get_config <- function() {
-      api$config
-    }
-
-    get_accept <- function(op_def) {
-      if (is.null(op_def$produces)) {
-        httr::accept_json()
-      } else if(length(op_def$produces) > 1) {
-        for(each in op_def$produces) {
-          httr::accept(each)
+        ## create function arguments from operation parameters definition
+        parameters <- get_parameters(api, op_def$parameters)
+        idx <- .api_is_message_body_parameter(op_def, parameters)
+        args <- do.call("alist", parameters[!idx])
+        if (what %in% c("POST", "PATCH", "PUT")) {
+            alist0 <- do.call("alist", list(.__body__ = parameters[idx]))
+            args <- c(args, alist(...=), alist0)
         }
-      } else {
-        httr::accept(op_def$produces)
-      }
-    }
+        formals(FUN) <- args
 
-    # function body
-    if(op_def$action == "post") {
-      tmp_fun <- function() {
-        x <- eval(param_values)
-        request_json <- get_message_body(op_def, x)
-        consumes <- ifelse(
-            is.null(op_def$consumes), "application/json", op_def$consumes
-        )
-        result <- httr::POST(
-          url = get_url(x),
-          config = get_config(),
-          body = request_json,
-          httr::content_type(consumes),
-          get_accept(op_def),
-          httr::add_headers(.headers = .headers)
-        )
-        handle_response(result)
-      }
-    } else if(op_def$action == "patch") {
-      tmp_fun <- function() {
-        x <- eval(param_values)
-        request_json <- get_message_body(op_def, x)
-        consumes <- ifelse(
-            is.null(op_def$consumes), "application/json", op_def$consumes
-        )
-        result <- httr::PATCH(
-          url = get_url(x),
-          config = get_config(),
-          body = request_json,
-          httr::content_type(consumes),
-          get_accept(op_def),
-          httr::add_headers(.headers = .headers)
-        )
-        handle_response(result)
-      }
-    } else if(op_def$action == "put") {
-      tmp_fun <- function() {
-        x <- eval(param_values)
-        request_json <- get_message_body(op_def, x)
-        consumes <- ifelse(
-            is.null(op_def$consumes), "application/json", op_def$consumes
-        )
-        result <- httr::PUT(
-          url = get_url(x),
-          config = get_config(),
-          body = request_json,
-          httr::content_type(consumes),
-          get_accept(op_def),
-          httr::add_headers(.headers = .headers)
-        )
-        handle_response(result)
-      }
-    } else if(op_def$action == "get") {
-      tmp_fun <- function() {
-        x <- eval(param_values)
-        result <- httr::GET(
-          url = get_url(x),
-          config = get_config(),
-          httr::content_type("application/json"),
-          get_accept(op_def),
-          httr::add_headers(.headers = .headers)
-        )
-        handle_response(result)
-      }
-    } else if(op_def$action == "head") {
-      tmp_fun <- function() {
-        x <- eval(param_values)
-        result <- httr::HEAD(
-          url = get_url(x),
-          config = get_config(),
-          httr::content_type("application/json"),
-          get_accept(op_def),
-          httr::add_headers(.headers = .headers)
-        )
-        handle_response(result)
-      }
-    } else if(op_def$action == "delete") {
-      tmp_fun <- function() {
-        x <- eval(param_values)
-        result <- httr::DELETE(
-          url = get_url(x),
-          config = get_config(),
-          httr::content_type("application/json"),
-          get_accept(op_def),
-          httr::add_headers(.headers = .headers)
-        )
-        handle_response(result)
-      }
-    }
-
-    # create function arguments from operation parameters definition
-    parameters <- get_parameters(api, op_def$parameters)
-    if(length(parameters)) {
-      formals(tmp_fun) <- do.call(alist, parameters)
-    }
-
-    # add the complete operation definition as a function attribute
-    attr(tmp_fun, "definition") <- op_def
-    class(tmp_fun) <- c(.class_operation, class(tmp_fun))
-    tmp_fun
-  })
-
+        ## add the complete operation definition as a function attribute
+        attr(FUN, "definition") <- op_def
+        class(FUN) <- c(.class_operation, class(FUN))
+        FUN
+    })
 }
-
 
 #' Message body
 #'
@@ -399,39 +343,56 @@ get_operations <- function(api, .headers = NULL, path = NULL,
 #' @param op_def A list representation of the swagger / openAPI
 #'     description of the operation.
 #'
-#' @param x A list representation of the operation arguments provided
+#' @param body A list representation of the operation arguments provided
 #'     by the user.
+#'
+#' @inheritParams jsonlite::toJSON
 #'
 #' @return A JSON character representation (for `body`) or list of
 #'     objects (for `formData`) representing the parameters `x`.
 #'
 #' @keywords internal
-get_message_body <- function(op_def, x) {
-  formData <- identical(op_def$consumes, "multipart/form-data")
-  parameters <- op_def$parameters
-  parameter_names <- vapply(parameters, function(parameter) {
-    if (parameter[["in"]] %in% c("body", "formData")) {
-      parameter[["name"]]
-    } else NA_character_
-  }, character(1))
-  parameter_names <- parameter_names[!is.na(parameter_names)]
-  x <- x[ names(x) %in% parameter_names ]
-  if (formData) {
-    json <- x
-  } else {
-    if (length(x) == 1L)
-      x <- x[[1]]
-    json <- jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE)
-  }
-
-  if(getOption("rapiclient.log_request", default = FALSE)) {
-    cat(if (formData) "formData" else json, "\n",
-        file = file.path(
-          getOption("rapiclient.log_request_path", "rapiclient_log.json")
-        ), append = FALSE
-    )
-  }
-  json
+get_message_body <- function(op_def, body, auto_unbox = TRUE) {
+    if (identical(op_def$consumes, "multipart/form-data")) {
+        json <- body
+    } else {
+        ## unbox?
+        name <- vapply(op_def$parameters, `[[`, character(1), "name")
+        ## match body names first
+        body <- body[names(body) %in% name]
+        type <- vapply(op_def$parameters, function(elt) {
+            type <- elt$type
+            if (is.null(type)) {
+                ## FIXME: recurse into $ref
+                NA_character_
+            } else {
+                type
+            }
+        }, character(1))
+        if (identical(length(body), 1L))
+            body <- body[[1L]]
+        if (is.null(body) || all(is.na(body)) || !length(body)) {
+            json <- structure("{}", class = "json")
+        } else {
+            for (nm in names(body)) {
+                idx <- match(nm, name)
+                if (type[idx] %in% c("string", "number", "integer", "boolean"))
+                    body[[nm]] <- jsonlite::unbox(body[[nm]])
+            }
+            json <- jsonlite::toJSON(
+                body, pretty = TRUE, auto_unbox = auto_unbox
+            )
+          }
+    }
+    if (getOption("rapiclient.log_request", default = FALSE)) {
+        cat(
+          json, "\n",
+          file = file.path(
+              getOption("rapiclient.log_request_path", "rapiclient_log.json")
+          ), append = FALSE
+        )
+    }
+    json
 }
 
 #' Build operations url
@@ -491,16 +452,14 @@ build_op_url <- function(api, scheme, host, base_path, op_def, par_values) {
 #' Extract all parameters from parameters definition as a list
 #' In case of reference to schema, use the schema.
 #' @param api API definition
-#' @param parameters_def A parameters from API operations definition
 #' @keywords internal
 get_parameters <- function(api, api_parameters) {
   parameters <- get_parameters_definition(api, api_parameters)
 
   if(length(parameters)) {
     parameters <- unlist(parameters)
-    parameters <- stats::setNames(
-      vector("list", length(parameters)),
-      parameters
+    parameters <- structure(
+      vector("list", length(parameters)), .Names = parameters
     )
   }
   parameters
@@ -545,14 +504,21 @@ get_parameters_from_schema <- function(api, schema) {
 #' See \code{\link{get_operations}} for details.
 #'
 #' @name result_handlers
+#'
 #' @param x A response object from httr package (see \link[httr]{response}
 #'   object in \pkg{httr} package  documentation)
+#'
 #' @return Content of http response
-#' @export
+#'
 #' @examples
-#' \dontrun{
+#' api_file <- system.file(
+#'   "extdata", "sample_specs", "petstore.yaml",
+#'   package = "rapiclient", mustWork = TRUE
+#' )
+#' api <- get_api(api_file)
 #' operations <- get_operations(api, handle_response = content_or_stop)
-#' }
+#'
+#' @export
 content_or_stop <- function(x) {
   res <- httr::stop_for_status(x)
   if(inherits(res, "response")) {

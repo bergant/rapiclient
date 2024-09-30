@@ -11,7 +11,7 @@ print_wrap <- function(text, ...) {
 #' Print API object
 #'
 #' @param x API object
-#' @param ...further arguments passed to or from other methods
+#' @param ... further arguments passed to or from other methods
 #' @export
 #' @keywords internal
 print.rapi_api <- function(x, ...) {
@@ -34,7 +34,7 @@ print.rapi_api <- function(x, ...) {
 #' Print Operation
 #'
 #' @param x Operation
-#' @param ...further arguments passed to or from other methods
+#' @param ... further arguments passed to or from other methods
 #' @export
 #' @keywords internal
 print.rapi_operation <- function(x, ...) {
@@ -111,7 +111,7 @@ print.rapi_operation <- function(x, ...) {
 #' Print Operation
 #'
 #' @param x Operation
-#' @param ...further arguments passed to or from other methods
+#' @param ... further arguments passed to or from other methods
 #' @export
 #' @keywords internal
 print.rapi_schema_function <- function(x, ...) {

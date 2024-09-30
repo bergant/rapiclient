@@ -1,21 +1,29 @@
 Package: rapiclient
 Type: Package
 Title: Dynamic OpenAPI/Swagger Client
-Version: 0.1.4
-Authors@R: person("Darko", "Bergant", email = "darko.bergant@gmail.com",
-                  role = c("aut", "cre"))
+Version: 0.1.7
+Authors@R: c(
+  person("Darko", "Bergant", , "darko.bergant@gmail.com", "aut"),
+  person("Marcel", "Ramos", , "marcel.ramos@sph.cuny.edu", c("cre", "ctb"),
+    comment = c(ORCID = "0000-0002-3242-0582")
+  ),
+  person("Alexandru", "Mahmoud", , , "ctb"),
+  person("Sean", "Davis", , , "ctb"),
+  person("Martin", "Morgan", , , "ctb")
+  )
 URL: https://github.com/bergant/rapiclient
 BugReports: https://github.com/bergant/rapiclient/issues
 Description: Access services specified in OpenAPI (formerly Swagger) format.
   It is not a code generator. Client is generated dynamically as a list of R 
   functions.
 Depends:
-    R (>= 3.3)
+    R (>= 3.3.0)
 License: MIT + file LICENSE
 Imports:
   jsonlite,
   httr,
+  tools,
   yaml
-LazyData: TRUE
-RoxygenNote: 6.1.1
+Encoding: UTF-8
+RoxygenNote: 7.3.2
 Suggests: testthat
