@@ -286,7 +286,7 @@ get_operations <-
             PUT = function(..., .__body__ = list()) {
                 args <- .api_args(formals(), environment())
                 body0 <- .api_body(formals(), ..., .__body__ = .__body__)
-                body <-  get_message_body(op_def, body0, auto_unbox)
+                body <-  get_message_body(api, op_def, body0, auto_unbox)
                 result <- HTTR_FUN(
                     url = .get_url(api, op_def, args),
                     config = .get_config(api),
@@ -329,6 +329,28 @@ get_operations <-
     })
 }
 
+.unbox_body_from_property <- function(body, propertylist) {
+    if (!is.null(body) && !all(is.na(body)) && length(body)) {
+        bfields <- intersect(names(body), names(propertylist))
+        for (nm in bfields) {
+            type <- propertylist[[nm]][["type"]]
+            if (type %in% c("string", "number", "integer", "boolean"))
+                body[[nm]] <- jsonlite::unbox(body[[nm]])
+        }
+    }
+    body
+}
+
+.type_from_param <- function(param) {
+    type <- param$type
+    if (is.null(type)) {
+        type <- param[["schema"]][["type"]]
+        if (is.null(type))
+            type <- NA_character_
+    }
+    type
+}
+
 #' Message body
 #'
 #' Transform a list of operation arguments to an http request message
@@ -352,37 +374,32 @@ get_operations <-
 #'     objects (for `formData`) representing the parameters `x`.
 #'
 #' @keywords internal
-get_message_body <- function(op_def, body, auto_unbox = TRUE) {
+get_message_body <- function(api, op_def, body, auto_unbox = TRUE) {
     if (identical(op_def$consumes, "multipart/form-data")) {
         json <- body
     } else {
-        ## unbox?
-        name <- vapply(op_def$parameters, `[[`, character(1), "name")
-        ## match body names first
-        body <- body[names(body) %in% name]
-        type <- vapply(op_def$parameters, function(elt) {
-            type <- elt$type
-            if (is.null(type)) {
-                ## FIXME: recurse into $ref
-                NA_character_
-            } else {
-                type
-            }
-        }, character(1))
-        if (identical(length(body), 1L))
-            body <- body[[1L]]
-        if (is.null(body) || all(is.na(body)) || !length(body)) {
+        parameters <- op_def$parameters
+        param_names <- vapply(parameters, `[[`, character(1L), "name")
+        body_param <- parameters[param_names == names(body)]
+        if (!length(body_param) || !length(body)) {
             json <- structure("{}", class = "json")
         } else {
-            for (nm in names(body)) {
-                idx <- match(nm, name)
-                if (type[idx] %in% c("string", "number", "integer", "boolean"))
-                    body[[nm]] <- jsonlite::unbox(body[[nm]])
+            type <- vapply(body_param, .type_from_param, character(1L))
+            if (identical(length(body), 1L))
+                body <- body[[1L]]
+            if (identical(type, "array")) {
+                array_prop <- api$definitions[[
+                    gsub(
+                        "#/definitions/", "",
+                        body_param[[1L]]$schema$items$`$ref`
+                    )
+                ]]
+                if (!all(array_prop$required %in% names(body)))
+                    stop("missing required fields in body")
+                body <- .unbox_body_from_property(body, array_prop$properties)
             }
-            json <- jsonlite::toJSON(
-                body, pretty = TRUE, auto_unbox = auto_unbox
-            )
-          }
+        }
+        json <- jsonlite::toJSON(body, pretty = TRUE)
     }
     if (getOption("rapiclient.log_request", default = FALSE)) {
         cat(
