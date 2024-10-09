@@ -151,7 +151,7 @@ get_operation_definitions <- function(api, path = NULL) {
       # that situation as well.
       if(is.null(operation$parameters) || length(operation$parameters)==0) {
         operation$parameters <- api$paths[[path_name]]$parameters
-      } else {
+      } else if (length(names(operation$parameters))) {
         ## check names in operations parameters
         name_o_params <- .get_names(operation$parameters)
         name_api_params <- .get_names(api$paths[[path_name]]$parameters)
