@@ -5,6 +5,14 @@
 .class_schema <- "rapi_schema"
 .class_schema_function <- "rapi_schema_function"
 
+maybe_add_user_agent <- function(.headers) {
+  if (is.null(.headers) || !"User-Agent" %in% names(.headers)) {
+    c("User-Agent" = "https://github.com/bergant/rapiclient", .headers)
+  } else {
+    .headers
+  }
+}
+
 fetch_content <- function(url, config = NULL) {
     if (!startsWith(url, "http") && file.exists(url))
         return(readLines(url, encoding = "UTF-8"))
@@ -292,7 +300,7 @@ get_operations <-
                     config = .get_config(api),
                     .get_content_type(op_def),
                     .get_accept(op_def),
-                    httr::add_headers(.headers = .headers),
+                    httr::add_headers(.headers = maybe_add_user_agent(.headers)),
                     body = body
                 )
                 handle_response(result)
@@ -306,7 +314,7 @@ get_operations <-
                     config = .get_config(api),
                     .get_content_type(op_def),
                     .get_accept(op_def),
-                    httr::add_headers(.headers = .headers)
+                    httr::add_headers(.headers = maybe_add_user_agent(.headers))
                 )
                 handle_response(result)
             }
@@ -548,3 +556,4 @@ content_or_message <- function(x) {
     res
   }
 }
+
