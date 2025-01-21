@@ -239,4 +239,54 @@ test_that("get_operation_definitions works", {
     )
 })
 
+test_that("positional matching works for body arguments", {
+    fun <- function(
+        workspaceNamespace = NULL, workspaceName = NULL,
+        async = NULL, deleteEmptyValues = NULL, ...,
+        .__body__ = list(entities = NULL)
+    ) {
+        op_def <- list(
+            consumes = "multipart/form-data",
+            parameters = list(
+                list(
+                    description = "A valid TSV import file",
+                    format = "binary",
+                    `in` = "formData",
+                    name = "entities",
+                    required = TRUE,
+                    type = "string"
+                )
+            ),
+            tags = "Entities",
+            operationId = "flex",
+            summary = "Import entities from a tsv file",
+            path =
+                "/api/workspaces/{workspaceNamespace}/{workspaceName}/flex",
+            action = "post"
+        )
+        ## hack to set name in body
+        formals <- formals()
+        formals$.__body__ <- eval(formals$.__body__)
+        ## end hack
+        args <- .api_args(formals, environment())
+        body0 <- .api_body(formals, ..., .__body__ = .__body__)
+        body <- get_message_body(op_def, body0, FALSE)
+        identical(names(body), "entities")
+    }
+
+    ## named...
+    expect_true(
+        fun("A", "B", .__body__ = list(entities = "C"))
+    )
+    expect_true(
+        fun("A", "B", entities = "C")
+    )
+    ## positional
+    expect_true(
+        fun("A", "B", .__body__ = list("C"))
+    )
+    expect_true(
+        fun("A", "B", , , "C")
+    )
+})
 
